@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npm install 2>&1)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1)"
+    ]
+  }
+}
