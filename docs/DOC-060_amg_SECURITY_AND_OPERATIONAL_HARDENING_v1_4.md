@@ -2,8 +2,8 @@
 
 **Status:** Canonical
 **Effective Date:** March 10, 2026
-**Version:** 1.3
-**Timestamp:** 20260310-1321 (CST)
+**Version:** 1.4
+**Timestamp:** 20260310-1356 (CST)
 **Governing Document:** DOC-000 — AMG System Charter & Product Promise (v1.1)
 
 ---
@@ -15,7 +15,8 @@
 | 1.0 | 20260309-1555 | Initial release |
 | 1.1 | 20260310-1020 | §10 Rate Limiting hardened; §11 Contact Form Abuse Protection added |
 | 1.2 | 20260310-1302 | §14 Dependency Security Governance added — npm audit requirements, patch SLA, lockfile policy, abandoned dependency prohibition, supply-chain incident classification |
-| 1.3 | 20260310-1321 | §4.2 CSP Nonce Governance added — inline script nonce requirement, per-request nonce generation, `unsafe-inline` prohibition |
+| 1.3 | 20260310-1321 | §4.2 CSP Nonce Governance added |
+| 1.4 | 20260310-1356 | §4.3 Additional Isolation Headers added — COOP/CORP same-origin policy, XS-Leak mitigation; §15 Production Error Response Discipline added — stack trace prohibition, internal path prohibition, env variable prohibition |
 
 ---
 
@@ -138,6 +139,19 @@ Inline `<script>` blocks without a nonce attribute are prohibited. If a script c
 **Exception:** If a third-party integration (e.g. an analytics library) injects inline scripts that cannot be controlled, and nonces cannot be applied to those scripts, the integration is incompatible with the CSP requirements of this system. The integration must be replaced with one that supports nonce-based CSP, or it must not be included.
 
 **Next.js implementation note:** Next.js App Router supports nonce-based CSP via middleware. The nonce is generated in `middleware.ts`, set in the CSP header, and passed to the Next.js rendering context. Server Components and the `<Script>` component accept the nonce prop. This is the governed implementation pattern.
+
+### 4.3 Additional Isolation Headers
+
+Modern browsers provide document-level and resource-level isolation primitives that protect against cross-origin attacks — including XS-Leaks, Spectre-class side-channel attacks, and cross-window interaction exploits — that CSP alone cannot prevent. These headers are required on all HTTP responses.
+
+| Header | Required Value | Purpose |
+|--------|---------------|---------|
+| `Cross-Origin-Opener-Policy` | `same-origin` | Prevents cross-origin documents from retaining a reference to this page's browsing context window. Blocks cross-window attacks and is required to enable `SharedArrayBuffer` isolation. |
+| `Cross-Origin-Resource-Policy` | `same-origin` | Prevents other origins from loading this page's resources (scripts, images, fonts) via `<img>`, `<script>`, or `fetch`. Mitigates XS-Leak attacks that exploit resource inclusion. |
+
+**Configuration:** Both headers are configured globally at the framework level in `next.config.js` `headers()` alongside the security headers defined in §4. They are not set per-route. There are no route exemptions.
+
+**Interaction with third-party embeds:** `Cross-Origin-Resource-Policy: same-origin` applies to resources served by this origin. It does not affect cross-origin resources loaded by this page (e.g. Sanity CDN images, Google Fonts). If the deployment serves resources that must be loadable by other origins — for example, a public API or embeddable widget — that scenario is out of scope for AMG and would require a governed amendment before `same-origin` could be relaxed.
 
 ---
 
@@ -361,12 +375,16 @@ Per DOC-090 §4.5. Events: `CAPTCHA_FAILED`, `HONEYPOT_TRIGGERED`, `DUPLICATE_SU
 | 20 | All secrets in deployment environment | §12.1 |
 | 21 | `SANITY_API_TOKEN` absent from client bundles | §12.2 |
 | 22 | Security event logging active | §8 |
-| 23 | No stack traces in production error responses | DOC-010 §7.4 |
+| 23 | No stack traces in production error responses | §15 |
 | 24 | `npm audit` passes with no HIGH/CRITICAL vulnerabilities | §14.1 |
 | 25 | `package-lock.json` committed | §14.3 |
 | 26 | All inline `<script>` blocks include nonce attribute | §4.2 |
 | 27 | CSP `script-src` uses `'nonce-[value]'`, not `unsafe-inline` | §4.2 |
 | 28 | Nonce value generated per-request from cryptographically secure source | §4.2 |
+| 29 | `Cross-Origin-Opener-Policy: same-origin` header configured globally | §4.3 |
+| 30 | `Cross-Origin-Resource-Policy: same-origin` header configured globally | §4.3 |
+| 31 | Production error responses contain no internal file paths | §15 |
+| 32 | Production error responses contain no environment variable values | §15 |
 
 ---
 
@@ -419,6 +437,50 @@ Response to a supply-chain incident:
 5. Document the incident and resolution
 
 Supply-chain incidents are logged as `SECURITY_EVENT` entries (DOC-090 §4.3) with `event: "SUPPLY_CHAIN_INCIDENT"`.
+
+---
+
+## 15. Production Error Response Discipline
+
+### 15.1 Governing Principle
+
+An error response that leaks internal system information is a reconnaissance asset for an attacker. Stack traces expose file paths, dependency names and versions, internal module structure, and query patterns. Internal paths reveal deployment layout. Environment variable values expose credentials. None of these belong in a client-facing HTTP response under any circumstances.
+
+This section is not redundant with DOC-040 §5. DOC-040 defines the error envelope schema. This section defines what must never appear inside that envelope.
+
+### 15.2 Prohibited Content in Production API Responses
+
+The following must never appear in any HTTP response body returned by the AMG API in production:
+
+**Stack traces:** The full or partial call stack of a thrown exception — including any string that contains file paths, line numbers, and function names in sequence — is prohibited. This applies regardless of error severity. A `400` validation error has the same prohibition as a `500` server error.
+
+**Internal file paths:** Any path string of the form `/home/...`, `/var/...`, `/app/...`, `src/...`, `pages/...`, or similar that reveals the deployment's directory structure is prohibited. File paths appear in stack traces but may also appear in raw exception messages — both forms are prohibited.
+
+**Environment variable values:** The value of any environment variable — including non-secret variables such as `NODE_ENV`, `NEXT_PUBLIC_SANITY_DATASET`, or `CANONICAL_DOMAIN` — must not appear in error response bodies. Environment variable names (not values) may appear in controlled developer-authored error messages only if operationally necessary, and only for non-secret variables.
+
+**Dependency names and versions:** Raw exception messages from third-party libraries often include the library name and version. These must not be forwarded to the client.
+
+**Database query content:** Sanity GROQ query strings, query parameters, or Sanity-returned error payloads must not be forwarded to the client.
+
+### 15.3 Server Logs
+
+Detailed exception information — stack traces, raw error messages, internal paths — belongs exclusively in server-side logs. DOC-090 §3.3 governs the controlled `errorMessage` pattern: the log entry's `errorMessage` field is a developer-authored string describing the failure context, not a raw exception message. The raw exception may be captured in `internalDetail` for server-side diagnostic use only.
+
+### 15.4 Error Envelope Compliance
+
+All production API error responses must use the governed error envelope defined in DOC-040 §5. The envelope's `message` field contains a controlled, human-readable string authored by the developer. It describes what went wrong at the user-action level ("The project could not be saved. Please try again.") without referencing internal implementation details.
+
+The distinction is between describing a failure and explaining the failure's internal cause. The former is appropriate for client responses. The latter belongs only in server logs.
+
+### 15.5 Implementation Requirement
+
+Production error response discipline is enforced through a centralized error handler in the API layer. All unhandled exceptions are caught by this handler before reaching the HTTP response serializer. The handler:
+
+1. Logs the full exception detail (stack trace, raw message) to server-side logging per DOC-090 §4.6
+2. Constructs a governed error envelope using only the `errorCode` and a controlled `message` string
+3. Returns the envelope with the appropriate HTTP status code
+
+No route handler may bypass the centralized error handler by returning raw exception data directly.
 
 ---
 

@@ -2,8 +2,8 @@
 
 **Status:** Canonical
 **Effective Date:** March 10, 2026
-**Version:** 1.2
-**Timestamp:** 20260310-1321 (CST)
+**Version:** 1.3
+**Timestamp:** 20260310-1356 (CST)
 **Governing Documents:** DOC-000 — AMG System Charter (v1.1); DOC-010 — Architecture (v1.1); DOC-070 — SEO (v1.2)
 
 ---
@@ -15,6 +15,7 @@
 | 1.0 | 20260310-1020 | Initial release |
 | 1.1 | 20260310-1302 | §11 CDN and Cache Governance added — static asset immutable caching rules, HTML response cache-control headers, stale-content prohibition after verified mutations, ISR alignment requirement |
 | 1.2 | 20260310-1321 | §12 Lighthouse CI Enforcement added — CI gate requirement, mobile/desktop runs, score threshold failure policy, verification environment rules; §7.2 ISR Failure Behavior rule added — stale-on-failure requirement, APP_ERROR log trigger |
+| 1.3 | 20260310-1356 | §12.8 Deterministic Lighthouse Test Content added — stable CMS content requirement, benchmark entity policy, score variance prevention |
 
 ---
 
@@ -308,6 +309,8 @@ No `maximum-scale` or `user-scalable=no` — these are accessibility violations.
 | 28 | Lighthouse CI gates deployment — failing build does not promote to production |
 | 29 | Lighthouse CI runs against production build artifact, not dev server |
 | 30 | ISR failure serves stale page (no 500 to visitors) and generates APP_ERROR log |
+| 31 | Lighthouse CI uses dedicated benchmark entities for all detail page URLs |
+| 32 | Benchmark entities never edited, archived, or deleted outside amendment process |
 
 ---
 
@@ -435,6 +438,34 @@ At minimum, the following pages are included in every CI Lighthouse run:
 - `/contact` (Contact page)
 
 At least one entity detail page from each collection must also be included (e.g. one service detail, one project detail, one article detail), using representative content from the deployment's Content Store.
+
+### 12.8 Deterministic Lighthouse Test Content
+
+Lighthouse score variance across CI runs undermines the reliability of performance regression detection. A score that fluctuates between 91 and 97 due to non-deterministic page content cannot be used as a reliable gate. Deterministic content is required to make CI results meaningful.
+
+**Stable content requirement:**
+
+Pages included in Lighthouse CI runs must render deterministic content on every run. Content that changes between CI executions — such as a "latest articles" feed that updates as new articles are published, or a hero section whose content is edited by the operator — introduces score variance that is independent of code quality changes. This makes it impossible to distinguish a genuine performance regression from a content-driven score fluctuation.
+
+**Benchmark entity requirement:**
+
+Entity detail pages included in Lighthouse CI (per §12.7) must reference **dedicated benchmark entities** created specifically for CI use. These entities:
+
+- Are created once and treated as permanent fixtures in the Content Store
+- Are never edited, archived, or deleted outside of a governed amendment process
+- Contain representative content volumes for their type: a benchmark article includes a realistic body length and a cover image; a benchmark project includes a description, cover image, and at least two testimonials; a benchmark service includes a description and cover image
+- Are identified by a consistent, reserved slug (e.g. `ci-benchmark-service`, `ci-benchmark-project`, `ci-benchmark-article`) that is referenced directly in the `lighthouserc` URL configuration
+
+**Prohibited content sources for CI:**
+
+The following must not be used as the content source for Lighthouse CI runs:
+- Dynamic listing pages that include the most recently published entity (as the set changes over time)
+- Entity detail pages that reference whichever entity was most recently created or edited
+- Pages whose rendered content depends on the current date or time (e.g. "Published 3 days ago" strings that affect rendering)
+
+**Listing pages:**
+
+For listing pages (homepage, `/services`, `/portfolio`, `/insights`), the listing page URL itself is stable, but its rendered content changes as entities are added. This is acceptable for listing pages, provided the benchmark entity set is stable enough that the listing page content does not change between CI runs in normal operation. If listing pages exhibit score variance, a dedicated benchmark dataset (isolated from production content) must be used.
 
 ---
 
