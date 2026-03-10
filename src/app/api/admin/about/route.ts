@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { readClient, writeClient } from '@/lib/sanity/client'
 import { requireAdmin } from '@/lib/api/auth-guard'
@@ -131,6 +132,9 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
       { mayHavePersisted: result.mayHavePersisted, retryable: true }
     )
   }
+
+  revalidatePath('/')
+  revalidatePath('/about')
 
   return successResponse(result.data, requestId)
 })

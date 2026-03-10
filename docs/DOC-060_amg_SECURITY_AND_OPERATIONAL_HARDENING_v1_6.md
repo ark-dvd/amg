@@ -2,8 +2,8 @@
 
 **Status:** Canonical
 **Effective Date:** March 10, 2026
-**Version:** 1.5
-**Timestamp:** 20260310-1435 (CST)
+**Version:** 1.6
+**Timestamp:** 20260310-1457 (CST)
 **Governing Document:** DOC-000 — AMG System Charter & Product Promise (v1.1)
 
 ---
@@ -17,7 +17,8 @@
 | 1.2 | 20260310-1302 | §14 Dependency Security Governance added — npm audit requirements, patch SLA, lockfile policy, abandoned dependency prohibition, supply-chain incident classification |
 | 1.3 | 20260310-1321 | §4.2 CSP Nonce Governance added |
 | 1.4 | 20260310-1356 | §4.3 Additional Isolation Headers added; §15 Production Error Response Discipline added |
-| 1.5 | 20260310-1435 | §4.3 CORP value rationale added — explicit same-origin justification for AMG deployment model; §15 cross-reference corrected from DOC-040 §5 to DOC-040 §3.3 |
+| 1.5 | 20260310-1435 | §4.3 CORP value rationale added; §15 DOC-040 cross-reference corrected |
+| 1.6 | 20260310-1457 | §4 HSTS value updated to preload-eligible 2-year directive; §4.1.1 CSP Violation Reporting added; §11.6 CAPTCHA Provider Outage Behavior added |
 
 ---
 
@@ -98,11 +99,17 @@ All HTTP responses must include the following security headers, set at the Next.
 | Header | Required Value | Purpose |
 |--------|---------------|---------|
 | `Content-Security-Policy` | Defined per §4.1 | Prevents XSS and injection |
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Enforces HTTPS |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` | Enforces HTTPS; preload-list eligible |
 | `X-Frame-Options` | `DENY` | Prevents clickjacking |
 | `X-Content-Type-Options` | `nosniff` | Prevents MIME sniffing |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | Controls referrer exposure |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Restricts browser feature access |
+
+**HSTS preload rationale:** The `max-age` value of `63072000` (2 years) satisfies the minimum requirement for submission to the [Chrome HSTS preload list](https://hstspreload.org/). The `preload` directive signals intent to be included. Preloading eliminates the first-request downgrade window — the brief moment when a user navigates to the site for the first time on a new browser and the HSTS policy has not yet been seen. Without preloading, an attacker with network access can intercept that first HTTP request before the browser learns to enforce HTTPS. Preloading prevents this class of attack entirely by embedding the domain's HTTPS requirement in the browser binary.
+
+The previous value of `max-age=31536000` (1 year) was not preload-eligible. The new value is a strictly stronger requirement. AMG deployments should submit to the preload list once the domain is stable and HSTS is confirmed to be serving correctly. Submission is a one-time operational action, not a code change. Removal from the preload list is difficult and slow — the `preload` directive must not be set on a domain that may revert to HTTP.
+
+
 
 ### 4.1 Content Security Policy (CSP)
 
@@ -117,7 +124,54 @@ CSP must:
 
 The exact CSP value is defined per deployment. A CSP using `*` wildcards for script sources is non-compliant.
 
-### 4.2 CSP Nonce Governance
+### 4.1.1 CSP Violation Reporting
+
+A CSP without a reporting endpoint is silent — violations occur and are invisible. Violation reporting surfaces attempted XSS attacks, misconfigured third-party integrations that violate the policy, and browser compatibility issues with the deployed CSP before they affect users.
+
+**Reporting endpoint requirement:**
+
+The deployed CSP header must include a reporting directive:
+
+```http
+Content-Security-Policy:
+  ... existing directives ...;
+  report-to csp-endpoint
+```
+
+Or, for broader browser compatibility:
+
+```http
+Content-Security-Policy:
+  ... existing directives ...;
+  report-uri /api/security/csp-report
+```
+
+The preferred approach is `report-to` with a corresponding `Reporting-Endpoints` response header defining `csp-endpoint`. `report-uri` is deprecated but retains broader browser support; both directives may be included simultaneously for maximum coverage during the transition period.
+
+**`/api/security/csp-report` route:**
+
+If `report-uri` is used pointing to an AMG-hosted endpoint, that route:
+- Accepts `POST` requests with `Content-Type: application/csp-report` or `application/reports+json`
+- Requires no authentication (browsers send reports without credentials)
+- Parses the violation report body
+- Emits a structured `SECURITY_EVENT` log entry per DOC-090 §4.3 with `event: "CSP_VIOLATION"`
+- Returns `204 No Content`
+
+If reporting is delegated to a third-party reporting service (e.g. Report URI, Sentry), the `report-to` endpoint points to that service. The AMG application does not need to host the endpoint in this case, but violation data must still flow into the operational log stream.
+
+**Violation log event:**
+
+CSP violation reports generate `SECURITY_EVENT` log entries with `event: "CSP_VIOLATION"` and the following additional fields where available from the browser report: `blockedUri`, `violatedDirective`, `documentUri`. The full report body is not logged verbatim — only these specific fields are extracted and included in the structured entry.
+
+**Data discipline:**
+
+CSP violation reports sent by the browser must not include cookies, session tokens, or request body content. The `report-to` and `report-uri` endpoints must not echo back any submitted content in their responses. The endpoint returns `204` with no body.
+
+**Violation volume discipline:**
+
+CSP violations from legitimate configuration errors or browser compatibility quirks can generate high report volumes. A reporting endpoint that logs every report without sampling will flood the log stream. If violation volume exceeds 50 events per minute in production, a sampling strategy (e.g. log 10% of identical violations) is acceptable. Distinct `violatedDirective` + `blockedUri` combinations must each be logged at least once.
+
+
 
 Inline scripts represent a persistent XSS risk. When an inline `<script>` block exists in the page without a nonce, any attacker who can inject arbitrary content into the page can execute arbitrary JavaScript, because the browser cannot distinguish legitimate inline scripts from injected ones. Nonces solve this by binding each allowed inline script to a cryptographically unpredictable value that is unique per request.
 
@@ -335,7 +389,42 @@ Fingerprint: IP + lowercased trimmed email + SHA-256 of message body (first 200 
 
 Per DOC-090 §4.5. Events: `CAPTCHA_FAILED`, `HONEYPOT_TRIGGERED`, `DUPLICATE_SUBMISSION`, `SPAM_SUSPECTED`.
 
----
+### 11.6 CAPTCHA Provider Outage Behavior
+
+The CAPTCHA provider is a third-party dependency. Third-party dependencies have outages. An implementation that hard-fails the contact form when the CAPTCHA provider is unreachable causes legitimate submissions to fail for reasons entirely outside the operator's or visitor's control. This is unacceptable — a functional contact form is a core product requirement.
+
+**Degraded mode rule:**
+
+If the CAPTCHA provider is unavailable — defined as: the server-side validation request to the CAPTCHA provider times out, returns a network error, or returns an unexpected non-validation-failure response — the contact form must not return an error to the visitor. The submission proceeds under degraded protection mode.
+
+**Degraded protection mode:**
+
+When operating in degraded mode, the following protections remain active:
+- Rate limiting per §10.1 (10 req/min per IP + burst 3/10s)
+- Honeypot field check per §11.3
+- Duplicate submission fingerprinting per §11.2
+- URL spam threshold check per §11.3
+- Content length floor per §11.3
+
+These layers collectively provide meaningful abuse protection in the absence of CAPTCHA. A bot campaign will still encounter rate limits. A naive spam submission will still hit the honeypot or URL threshold.
+
+**Timeout definition:**
+
+A CAPTCHA provider is considered unavailable when the server-side validation request does not complete within **3 seconds**. Requests that exceed this threshold are treated as provider unavailability, not as CAPTCHA failures. The distinction is critical: a CAPTCHA failure means the user did not pass the challenge. A provider timeout means the challenge could not be evaluated. These are different conditions and must not produce the same outcome.
+
+**Log event:**
+
+Every submission processed under degraded mode generates a `CONTACT_FORM` log entry with `outcome: "CAPTCHA_PROVIDER_UNAVAILABLE"` (DOC-090 §4.5). This event is distinct from `CAPTCHA_FAILED`. A spike in `CAPTCHA_PROVIDER_UNAVAILABLE` events is the operational signal that the provider is experiencing an outage and that the deployment is operating without CAPTCHA protection.
+
+**Client-facing behavior:**
+
+The visitor receives no indication that CAPTCHA validation was skipped. The form behaves identically to a successful CAPTCHA pass. No error message is shown. The submission is processed normally subject to the remaining active protections.
+
+**Alert implication:**
+
+Sustained `CAPTCHA_PROVIDER_UNAVAILABLE` events — more than 10 within 5 minutes — should be treated as an operational alert condition. The deployment monitoring configuration should include this threshold. This alert condition supplements those defined in DOC-090 §7.2.
+
+
 
 ## 12. Secret Management
 
@@ -377,32 +466,35 @@ Per DOC-090 §4.5. Events: `CAPTCHA_FAILED`, `HONEYPOT_TRIGGERED`, `DUPLICATE_SU
 | 4 | Session invalidation server-side | §2.4 |
 | 5 | CSRF protection on all mutating admin routes | §3 |
 | 6 | All security headers configured | §4 |
-| 7 | CSP defined and tested | §4.1 |
-| 8 | Portable Text sanitization | §6.1 |
-| 9 | File upload magic bytes validation | §7.2 |
-| 10 | Admin API rate limiting (60/min per session) | §10.1 |
-| 11 | Auth route rate limiting (10/min per IP) | §10.1 |
-| 12 | Contact form rate limiting (10/min + burst) | §10.1 |
-| 13 | Upload rate limiting (20/min per session) | §10.1 |
-| 14 | 429 responses include `Retry-After` header | §10.2 |
-| 15 | CAPTCHA/Turnstile on contact form | §11.1 |
-| 16 | Honeypot field on contact form | §11.3 |
-| 17 | Duplicate fingerprinting active | §11.2 |
-| 18 | Contact form error messages use approved set | §11.4 |
-| 19 | Request body size limits enforced | §9.2 |
-| 20 | All secrets in deployment environment | §12.1 |
-| 21 | `SANITY_API_TOKEN` absent from client bundles | §12.2 |
-| 22 | Security event logging active | §8 |
-| 23 | No stack traces in production error responses | §15 |
-| 24 | `npm audit` passes with no HIGH/CRITICAL vulnerabilities | §14.1 |
-| 25 | `package-lock.json` committed | §14.3 |
-| 26 | All inline `<script>` blocks include nonce attribute | §4.2 |
-| 27 | CSP `script-src` uses `'nonce-[value]'`, not `unsafe-inline` | §4.2 |
-| 28 | Nonce value generated per-request from cryptographically secure source | §4.2 |
-| 29 | `Cross-Origin-Opener-Policy: same-origin` header configured globally | §4.3 |
-| 30 | `Cross-Origin-Resource-Policy: same-origin` header configured globally | §4.3 |
-| 31 | Production error responses contain no internal file paths | §15 |
-| 32 | Production error responses contain no environment variable values | §15 |
+| 7 | HSTS `max-age=63072000; includeSubDomains; preload` | §4 |
+| 8 | CSP defined and tested | §4.1 |
+| 9 | CSP violation reporting endpoint configured | §4.1.1 |
+| 10 | Portable Text sanitization | §6.1 |
+| 11 | File upload magic bytes validation | §7.2 |
+| 12 | Admin API rate limiting (60/min per session) | §10.1 |
+| 13 | Auth route rate limiting (10/min per IP) | §10.1 |
+| 14 | Contact form rate limiting (10/min + burst) | §10.1 |
+| 15 | Upload rate limiting (20/min per session) | §10.1 |
+| 16 | 429 responses include `Retry-After` header | §10.2 |
+| 17 | CAPTCHA/Turnstile on contact form | §11.1 |
+| 18 | Honeypot field on contact form | §11.3 |
+| 19 | Duplicate fingerprinting active | §11.2 |
+| 20 | Contact form error messages use approved set | §11.4 |
+| 21 | CAPTCHA provider outage handled — degrades gracefully | §11.6 |
+| 22 | Request body size limits enforced | §9.2 |
+| 23 | All secrets in deployment environment | §12.1 |
+| 24 | `SANITY_API_TOKEN` absent from client bundles | §12.2 |
+| 25 | Security event logging active | §8 |
+| 26 | No stack traces in production error responses | §15 |
+| 27 | `npm audit` passes with no HIGH/CRITICAL vulnerabilities | §14.1 |
+| 28 | `package-lock.json` committed | §14.3 |
+| 29 | All inline `<script>` blocks include nonce attribute | §4.2 |
+| 30 | CSP `script-src` uses `'nonce-[value]'`, not `unsafe-inline` | §4.2 |
+| 31 | Nonce value generated per-request from cryptographically secure source | §4.2 |
+| 32 | `Cross-Origin-Opener-Policy: same-origin` header configured globally | §4.3 |
+| 33 | `Cross-Origin-Resource-Policy: same-origin` header configured globally | §4.3 |
+| 34 | Production error responses contain no internal file paths | §15 |
+| 35 | Production error responses contain no environment variable values | §15 |
 
 ---
 

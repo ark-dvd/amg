@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { readClient, writeClient } from '@/lib/sanity/client'
 import { requireAdmin } from '@/lib/api/auth-guard'
@@ -108,6 +109,10 @@ export const PUT = withErrorHandler(
       )
     }
 
+    revalidatePath('/')
+    revalidatePath('/portfolio')
+    revalidatePath('/portfolio/[slug]', 'page')
+
     return successResponse(result.data, requestId)
   }
 )
@@ -152,6 +157,10 @@ export const DELETE = withErrorHandler(
       durationMs: Date.now() - startTime,
       timestamp: new Date().toISOString(),
     })
+
+    revalidatePath('/')
+    revalidatePath('/portfolio')
+    revalidatePath('/portfolio/[slug]', 'page')
 
     return successResponse({ deleted: true, id }, requestId)
   }

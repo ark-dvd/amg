@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npm install 2>&1)",
-      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1)"
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npm install @portabletext/react)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && mkdir -p src/lib/sanity src/components src/app/about src/app/services/\\\\[slug\\\\] src/app/portfolio/\\\\[slug\\\\] src/app/insights/\\\\[slug\\\\] src/app/contact src/app/terms src/app/privacy src/app/accessibility)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npm install @tailwindcss/typography)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1 | head -80)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -50)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && mv next.config.ts next.config.mjs)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -60)"
     ]
   }
 }

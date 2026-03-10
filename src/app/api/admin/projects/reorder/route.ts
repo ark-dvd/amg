@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { writeClient } from '@/lib/sanity/client'
 import { requireAdmin } from '@/lib/api/auth-guard'
@@ -65,6 +66,9 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     durationMs: Date.now() - startTime,
     timestamp: new Date().toISOString(),
   })
+
+  revalidatePath('/')
+  revalidatePath('/portfolio')
 
   return successResponse({ reordered: true, count: items.length }, requestId)
 })
