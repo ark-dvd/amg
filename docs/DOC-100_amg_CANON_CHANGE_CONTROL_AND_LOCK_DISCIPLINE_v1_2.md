@@ -2,8 +2,8 @@
 
 **Status:** Canonical
 **Effective Date:** March 10, 2026
-**Version:** 1.1
-**Timestamp:** 20260310-1321 (CST)
+**Version:** 1.2
+**Timestamp:** 20260310-1435 (CST)
 **Governing Document:** DOC-000 — AMG System Charter & Product Promise (v1.1)
 
 ---
@@ -13,7 +13,8 @@
 | Version | Timestamp (CST) | Changes |
 |---------|-----------------|---------|
 | 1.0 | 20260310-1302 | Initial release |
-| 1.1 | 20260310-1321 | §9 Canon Amendment Registry added — amendment log table, identifier reuse prohibition, registry-as-canonical-change-history rule; DOC-100 lock status updated to v1.1 |
+| 1.1 | 20260310-1321 | §9 Canon Amendment Registry added |
+| 1.2 | 20260310-1435 | §4.1 Amendment Identifier Naming Policy added — formal definition of CANON-HARDENING-[N] as pre-lock class and CANON-AMENDMENT-[N] as post-lock class, resolving identifier inconsistency; §9.2 registry rules updated to reference both identifier classes; §9.3 registry updated with HARDENING-008 and HARDENING-009; §8 inventory updated to current locked versions |
 
 ---
 
@@ -55,11 +56,11 @@ A canonical document is considered **locked** when all three of the following co
 | DOC-030 — Back Office Model | 1.1 | **LOCKED** |
 | DOC-040 — API Contract | 1.1 | **LOCKED** |
 | DOC-050 — UX Interaction Contract | 1.2 | **LOCKED** |
-| DOC-060 — Security Hardening | 1.3 | **LOCKED** |
+| DOC-060 — Security Hardening | 1.5 | **LOCKED** |
 | DOC-070 — SEO & Metadata | 1.2 | **LOCKED** |
-| DOC-080 — Performance & Rendering | 1.2 | **LOCKED** |
+| DOC-080 — Performance & Rendering | 1.3 | **LOCKED** |
 | DOC-090 — Observability & Logging | 1.1 | **LOCKED** |
-| DOC-100 — Change Control (this document) | 1.1 | **LOCKED** |
+| DOC-100 — Change Control (this document) | 1.2 | **LOCKED** |
 
 This table is updated with every amendment. It is the single authoritative record of what is locked and what is not.
 
@@ -99,9 +100,19 @@ Every amendment must identify all documents affected by the proposed change. Cha
 
 Every amendment is a formal document. It is not a code comment, a chat message, or an informal decision. It is written, versioned, timestamped, and stored alongside the canonical documents.
 
-### 4.1 Amendment Identifier
+### 4.1 Amendment Identifier Naming Policy
 
-Amendments are identified with sequential numbering: `CANON-AMENDMENT-004`, `CANON-AMENDMENT-005`, etc.
+Two classes of amendment identifier are formally recognized:
+
+**`CANON-HARDENING-[N]`** — Pre-lock amendment class. Used for all governance hardening rounds conducted before Canon Lock is declared. These rounds are initiated by an external CTO audit or Owner-directed governance tightening. They may span multiple documents and represent a cohesive governance correction pass rather than a single targeted change. All amendments issued against the AMG suite prior to Canon Lock carry this class prefix.
+
+**`CANON-AMENDMENT-[N]`** — Post-lock amendment class. Used for all changes issued after Canon Lock has been formally declared (§10). Post-lock amendments are the governed mechanism for evolving the canon in response to implementation gaps, new requirements, or architectural decisions discovered during or after development.
+
+Both classes share the same amendment document structure (§4.2), the same authority model (§5), and the same versioning discipline (§6). The prefix distinguishes when in the document lifecycle the amendment was issued — not the weight, scope, or authority required.
+
+Sequential numbering within each class is independent. `CANON-HARDENING-009` and `CANON-AMENDMENT-001` are not related by their numeric suffixes. Identifiers within each class are sequential and never reused.
+
+The Amendment Registry (§9.3) records both classes in a single chronological table. The `Amendment` column carries the full identifier including prefix, making the class visible at a glance.
 
 ### 4.2 Required Amendment Sections
 
@@ -265,11 +276,11 @@ The complete set of canonical documents governing AMG at the time of canon lock:
 | DOC-030 | Back Office & Operational Model | 1.1 |
 | DOC-040 | API Contract & Mutation Semantics | 1.1 |
 | DOC-050 | Back Office UX Interaction Contract | 1.2 |
-| DOC-060 | Security & Operational Hardening | 1.3 |
+| DOC-060 | Security & Operational Hardening | 1.5 |
 | DOC-070 | SEO, Indexability & Metadata Governance | 1.2 |
-| DOC-080 | Performance, Rendering & Lighthouse Governance | 1.2 |
+| DOC-080 | Performance, Rendering & Lighthouse Governance | 1.3 |
 | DOC-090 | Observability, Logging & Operational Diagnostics | 1.1 |
-| DOC-100 | Canon Change Control & Lock Discipline (this document) | 1.1 |
+| DOC-100 | Canon Change Control & Lock Discipline (this document) | 1.2 |
 
 No document outside this inventory is canonical. Documents referenced in code, comments, or informal communications that are not in this inventory have no canonical standing.
 
@@ -286,7 +297,7 @@ The Registry complements the revision history sections within individual documen
 ### 9.2 Registry Rules
 
 - The Registry is updated whenever an amendment is issued, regardless of outcome (Proposed, Approved, or Rejected)
-- Amendment identifiers are never reused. Once `CANON-AMENDMENT-N` is assigned, that identifier is permanently associated with that amendment event. A rejected or withdrawn amendment's identifier is retired, not reassigned
+- Amendment identifiers are never reused. Once a `CANON-HARDENING-N` or `CANON-AMENDMENT-N` identifier is assigned, it is permanently associated with that amendment event. A rejected or withdrawn amendment's identifier is retired, not reassigned
 - The Registry is the canonical change history of the document suite. If a change occurred and it is not in this Registry, it was not a governed change
 - The Registry is ordered chronologically by issue date, oldest first
 - The `Documents Affected` column lists the DOC-NNN identifiers of all canonical documents modified by the amendment (empty for Rejected amendments)
@@ -299,6 +310,8 @@ The Registry complements the revision history sections within individual documen
 | CANON-HARDENING-003 | CTO audit tightening round 1 | Approved | 20260310 | DOC-000, DOC-010, DOC-020, DOC-030, DOC-040, DOC-050, DOC-060, DOC-070 |
 | CANON-HARDENING-005 | Final governance completion | Approved | 20260310 | DOC-060, DOC-070, DOC-080, DOC-090, DOC-100 |
 | CANON-HARDENING-007 | Final governance tightening before Canon Lock | Approved | 20260310 | DOC-060, DOC-080, DOC-100 |
+| CANON-HARDENING-008 | Final operational tightening before Canon Lock | Approved | 20260310 | DOC-060, DOC-080 |
+| CANON-HARDENING-009 | Final consistency tightening before Canon Lock | Approved | 20260310 | DOC-060, DOC-100 |
 
 ### 9.4 How to Add an Entry
 

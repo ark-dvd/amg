@@ -2,8 +2,8 @@
 
 **Status:** Canonical
 **Effective Date:** March 10, 2026
-**Version:** 1.4
-**Timestamp:** 20260310-1356 (CST)
+**Version:** 1.5
+**Timestamp:** 20260310-1435 (CST)
 **Governing Document:** DOC-000 — AMG System Charter & Product Promise (v1.1)
 
 ---
@@ -16,7 +16,8 @@
 | 1.1 | 20260310-1020 | §10 Rate Limiting hardened; §11 Contact Form Abuse Protection added |
 | 1.2 | 20260310-1302 | §14 Dependency Security Governance added — npm audit requirements, patch SLA, lockfile policy, abandoned dependency prohibition, supply-chain incident classification |
 | 1.3 | 20260310-1321 | §4.2 CSP Nonce Governance added |
-| 1.4 | 20260310-1356 | §4.3 Additional Isolation Headers added — COOP/CORP same-origin policy, XS-Leak mitigation; §15 Production Error Response Discipline added — stack trace prohibition, internal path prohibition, env variable prohibition |
+| 1.4 | 20260310-1356 | §4.3 Additional Isolation Headers added; §15 Production Error Response Discipline added |
+| 1.5 | 20260310-1435 | §4.3 CORP value rationale added — explicit same-origin justification for AMG deployment model; §15 cross-reference corrected from DOC-040 §5 to DOC-040 §3.3 |
 
 ---
 
@@ -147,11 +148,28 @@ Modern browsers provide document-level and resource-level isolation primitives t
 | Header | Required Value | Purpose |
 |--------|---------------|---------|
 | `Cross-Origin-Opener-Policy` | `same-origin` | Prevents cross-origin documents from retaining a reference to this page's browsing context window. Blocks cross-window attacks and is required to enable `SharedArrayBuffer` isolation. |
-| `Cross-Origin-Resource-Policy` | `same-origin` | Prevents other origins from loading this page's resources (scripts, images, fonts) via `<img>`, `<script>`, or `fetch`. Mitigates XS-Leak attacks that exploit resource inclusion. |
+| `Cross-Origin-Resource-Policy` | `same-origin` | Prevents other origins from loading this origin's resources via `<img>`, `<script>`, or `fetch`. Mitigates XS-Leak attacks that exploit cross-origin resource inclusion. |
 
 **Configuration:** Both headers are configured globally at the framework level in `next.config.js` `headers()` alongside the security headers defined in §4. They are not set per-route. There are no route exemptions.
 
-**Interaction with third-party embeds:** `Cross-Origin-Resource-Policy: same-origin` applies to resources served by this origin. It does not affect cross-origin resources loaded by this page (e.g. Sanity CDN images, Google Fonts). If the deployment serves resources that must be loadable by other origins — for example, a public API or embeddable widget — that scenario is out of scope for AMG and would require a governed amendment before `same-origin` could be relaxed.
+#### CORP Value Rationale
+
+The `Cross-Origin-Resource-Policy` value is explicitly `same-origin`, not `same-site` or `cross-origin`. This choice is deliberate and is justified by AMG's deployment model as follows.
+
+**What `same-origin` permits:** Any page served from the same origin (same scheme + hostname + port) may load resources from this origin. All same-origin requests — the AMG Next.js application loading its own JS bundles, CSS, and self-hosted fonts — are unaffected.
+
+**What `same-origin` forbids:** Pages served from any other origin — including subdomains of the same registered domain — may not load resources from this origin via `<img>`, `<script>`, `<link>`, or `fetch`. An attacker-controlled page cannot include a `<script src="https://[amg-domain]/some-path">` that exploits cross-origin resource timing or response body side-channels.
+
+**Why `same-origin` is correct for AMG:** AMG serves no resources that are intentionally consumable by foreign origins. Specifically:
+
+- **CMS images** are served from Sanity's CDN (`cdn.sanity.io`), a separate origin with its own CORP posture. AMG's origin does not re-serve Sanity images. `same-origin` on AMG's origin does not affect Sanity CDN responses.
+- **Fonts** are loaded via `next/font`, which self-hosts font files at build time. These font files are served from AMG's own origin and consumed only by AMG's own pages — `same-origin` is correct.
+- **No public API** consumed by third-party origins exists in AMG's architecture. AMG exposes no embeddable widget, no JSONP endpoint, and no publicly shared asset that another site is expected to include.
+- **No CDN subdomain split** is used. AMG serves all resources from a single origin on Netlify. If a future deployment introduced a separate static asset subdomain (e.g. `assets.amg-domain.com`), that subdomain would be a different origin, and this policy would need to be reviewed via a governed amendment.
+
+**Why `same-site` was not chosen:** `same-site` would permit any subdomain of the registered domain to load AMG's resources. Since AMG does not control which subdomains may exist on a client's domain, `same-site` introduces unnecessary exposure surface. `same-origin` is the more restrictive and therefore more correct value given AMG's architecture.
+
+**Amendment required to relax:** Any future deployment scenario that requires resources from AMG's origin to be loadable by a different origin must be evaluated and approved via a Canon Amendment before `same-origin` is changed.
 
 ---
 
@@ -446,7 +464,7 @@ Supply-chain incidents are logged as `SECURITY_EVENT` entries (DOC-090 §4.3) wi
 
 An error response that leaks internal system information is a reconnaissance asset for an attacker. Stack traces expose file paths, dependency names and versions, internal module structure, and query patterns. Internal paths reveal deployment layout. Environment variable values expose credentials. None of these belong in a client-facing HTTP response under any circumstances.
 
-This section is not redundant with DOC-040 §5. DOC-040 defines the error envelope schema. This section defines what must never appear inside that envelope.
+This section is not redundant with DOC-040 §3.3. DOC-040 defines the error envelope schema. This section defines what must never appear inside that envelope.
 
 ### 15.2 Prohibited Content in Production API Responses
 
@@ -468,7 +486,7 @@ Detailed exception information — stack traces, raw error messages, internal pa
 
 ### 15.4 Error Envelope Compliance
 
-All production API error responses must use the governed error envelope defined in DOC-040 §5. The envelope's `message` field contains a controlled, human-readable string authored by the developer. It describes what went wrong at the user-action level ("The project could not be saved. Please try again.") without referencing internal implementation details.
+All production API error responses must use the governed error envelope defined in DOC-040 §3.3. The envelope's `message` field contains a controlled, human-readable string authored by the developer. It describes what went wrong at the user-action level ("The project could not be saved. Please try again.") without referencing internal implementation details.
 
 The distinction is between describing a failure and explaining the failure's internal cause. The former is appropriate for client responses. The latter belongs only in server logs.
 
