@@ -8,7 +8,8 @@ export const readClient = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false,
+  useCdn: true,
+  token: process.env.SANITY_API_TOKEN,
 })
 
 export const writeClient = createClient({
