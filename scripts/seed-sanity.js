@@ -35,9 +35,21 @@ function pt(key, text) {
   };
 }
 
+const SINGLETON_IDS = new Set([
+  'singleton.siteSettings',
+  'singleton.hero',
+  'singleton.about',
+]);
+
 async function seed(label, doc) {
   try {
-    const res = await client.createOrReplace(doc);
+    let res;
+    if (SINGLETON_IDS.has(doc._id)) {
+      // Never overwrite singletons — only create if missing
+      res = await client.createIfNotExists(doc);
+    } else {
+      res = await client.createOrReplace(doc);
+    }
     console.log(`✅ ${label} → ${res._id}`);
     results.push({ label, ok: true });
   } catch (e) {
