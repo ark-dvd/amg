@@ -18,9 +18,9 @@ import type { AboutDocument } from '@/types/sanity'
 const SINGLETON_ID = 'singleton.about'
 
 const aboutSchema = z.object({
-  pageTitle: z.string().min(1).max(100),
-  intro: z.string().min(1).max(500),
-  body: portableTextSchema,
+  pageTitle: z.string().max(100).optional(),
+  intro: z.string().max(500).optional(),
+  body: portableTextSchema.optional(),
   teamSectionTitle: z.string().max(80).optional(),
   teamMembers: z
     .array(
@@ -117,9 +117,7 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
     readBack: fetchAbout,
     verifyReadBack: (doc) =>
       doc._id === SINGLETON_ID &&
-      doc._rev !== preWriteRev &&
-      typeof doc.pageTitle === 'string' &&
-      doc.pageTitle.length > 0,
+      doc._rev !== preWriteRev,
   })
 
   if (!result.success) {
