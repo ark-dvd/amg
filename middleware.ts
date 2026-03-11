@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const nonce = crypto.randomUUID()
   const { pathname } = request.nextUrl
 
-  const isAdminPage = pathname === '/admin' || pathname.startsWith('/admin/')
+  const isAdminPage = (pathname === '/admin' || pathname.startsWith('/admin/')) && pathname !== '/admin/login'
   const isAdminApi = pathname.startsWith('/api/admin/')
 
   if (isAdminPage || isAdminApi) {
@@ -51,9 +51,8 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
         return applySecurityHeaders(response, nonce)
       }
 
-      const signInUrl = new URL('/api/auth/signin', request.url)
-      signInUrl.searchParams.set('callbackUrl', request.url)
-      const response = NextResponse.redirect(signInUrl)
+      const loginUrl = new URL('/admin/login', request.url)
+      const response = NextResponse.redirect(loginUrl)
       return applySecurityHeaders(response, nonce)
     }
   }

@@ -1,8 +1,12 @@
+import dynamic from 'next/dynamic'
 import { getSiteSettings } from '@/lib/sanity/queries'
 import { buildMetadata, buildOrganizationJsonLd, buildBreadcrumbJsonLd, buildJsonLdScript, canonicalUrl } from '@/lib/seo'
 import { JsonLd } from '@/components/JsonLd'
-import { ContactForm } from './ContactForm'
 import type { Metadata } from 'next'
+
+const ContactForm = dynamic(() => import('./ContactForm').then(m => m.ContactForm), {
+  loading: () => <div className="animate-pulse h-96 bg-gray-100 rounded" />,
+})
 
 export const revalidate = 60
 

@@ -27,7 +27,7 @@ interface BuildMetadataOptions {
 
 export function buildMetadata(opts: BuildMetadataOptions): Metadata {
   const url = canonicalUrl(opts.path)
-  const description = opts.description ?? opts.globalSeoDescription ?? ''
+  const description = opts.description || opts.globalSeoDescription || undefined
   const ogImageSource = opts.ogImage ?? opts.globalOgImage
   const ogImageUrl = ogImageSource ? urlFor(ogImageSource).width(1200).height(630).url() : undefined
 

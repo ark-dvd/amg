@@ -82,7 +82,7 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
+        <div className="md:hidden border-t border-gray-100 bg-white" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="px-4 py-4 space-y-3">
             {links.map((link) => (
               <Link

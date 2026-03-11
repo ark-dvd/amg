@@ -9,7 +9,17 @@
       "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1 | head -80)",
       "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -50)",
       "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && mv next.config.ts next.config.mjs)",
-      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -60)"
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -60)",
+      "Bash(cd \"C:/Users/Arik Davidi/Documents/GitHub/amg\" && npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-link @tiptap/extension-underline @tiptap/extension-blockquote 2>&1 | tail -5)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1 | head -200)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1 | wc -l)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -80)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npm install --save-dev @lhci/cli tsx 2>&1 | tail -5)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -50)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npm audit --audit-level=high 2>&1)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npm audit fix 2>&1)",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx tsc --noEmit 2>&1 && echo \"TSC OK\")",
+      "Bash(cd \"/c/Users/Arik Davidi/Documents/GitHub/amg\" && npx next build 2>&1 | tail -15)"
     ]
   }
 }
