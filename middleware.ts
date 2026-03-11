@@ -18,7 +18,8 @@ function buildCsp(nonce: string): string {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https://cdn.sanity.io",
     "font-src 'self' https://fonts.gstatic.com",
-    "connect-src 'self' https://api.sanity.io",
+    "connect-src 'self' https://api.sanity.io https://accounts.google.com",
+    "frame-src https://accounts.google.com",
     "frame-ancestors 'none'",
   ].join('; ')
 }

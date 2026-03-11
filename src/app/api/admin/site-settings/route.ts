@@ -205,8 +205,9 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
     preWriteRev,
     writeOperation: async () => {
       await writeClient
-        .patch(SINGLETON_ID)
-        .set({ ...fields, updatedAt: new Date().toISOString() })
+        .transaction()
+        .createIfNotExists({ _id: SINGLETON_ID, _type: 'siteSettings' })
+        .patch(SINGLETON_ID, (p) => p.set({ ...fields, updatedAt: new Date().toISOString() }))
         .commit()
     },
     readBack: fetchSettings,
