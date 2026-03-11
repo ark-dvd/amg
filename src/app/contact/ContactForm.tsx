@@ -23,20 +23,20 @@ export function ContactForm({ labels }: ContactFormProps) {
     setStatus('submitting')
 
     const form = e.currentTarget
-    const formData = new FormData(form)
-    const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phone: (formData.get('phone') as string) || undefined,
-      company: (formData.get('company') as string) || undefined,
-      message: formData.get('message') as string,
-    }
+    const formData = new URLSearchParams()
+    formData.append('form-name', 'contact')
+    formData.append('bot-field', '')
+    formData.append('name', new FormData(form).get('name') as string)
+    formData.append('email', new FormData(form).get('email') as string)
+    formData.append('phone', (new FormData(form).get('phone') as string) || '')
+    formData.append('company', (new FormData(form).get('company') as string) || '')
+    formData.append('message', new FormData(form).get('message') as string)
 
     try {
-      const res = await fetch('/api/public/contact', {
+      const res = await fetch('/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString(),
       })
 
       if (res.ok) {
@@ -59,7 +59,16 @@ export function ContactForm({ labels }: ContactFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form
+      name="contact"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
+      <input type="hidden" name="form-name" value="contact" />
+      <input type="hidden" name="bot-field" />
+
       {status === 'error' && (
         <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
           <p>{labels.error}</p>
