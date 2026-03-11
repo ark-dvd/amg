@@ -46,7 +46,7 @@ export default async function HomePage() {
 
       {/* Hero Section */}
       {hero && (
-        <section className="relative h-screen min-h-[600px] -mt-16 flex items-center justify-center overflow-hidden">
+        <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
           {hero.mediaType === 'video' && hero.videoAsset?.asset?._ref ? (
             <>
               {hero.videoPoster && (

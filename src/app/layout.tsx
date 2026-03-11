@@ -55,7 +55,7 @@ export default async function RootLayout({
           logo={settings?.logo}
           nav={settings?.nav}
         />
-        <main id="main-content" className="min-h-screen pt-16">{children}</main>
+        <main id="main-content" className="min-h-screen">{children}</main>
         {settings && <Footer settings={settings} />}
       </body>
     </html>

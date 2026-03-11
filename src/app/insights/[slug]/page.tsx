@@ -82,7 +82,7 @@ export default async function ArticleDetailPage({ params }: Props) {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <article className="mx-auto max-w-4xl px-4 py-20 sm:py-28">
+      <article className="mx-auto max-w-4xl px-4 pt-32 pb-20 sm:pt-36 sm:pb-28">
         <header className="mb-12">
           <div className="flex items-center gap-3 text-sm text-muted mb-4">
             {article.category && <span className="text-xs font-medium uppercase tracking-widest text-gold">{article.category}</span>}

@@ -34,7 +34,7 @@ export default async function TermsPage() {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <div className="mx-auto max-w-4xl px-4 py-20 sm:py-28">
+      <div className="mx-auto max-w-4xl px-4 pt-32 pb-20 sm:pt-36 sm:pb-28">
         <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-12">
           {settings.termsLabel ?? 'Terms of Use'}
         </h1>

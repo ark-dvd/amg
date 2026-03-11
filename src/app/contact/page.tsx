@@ -46,7 +46,7 @@ export default async function ContactPage() {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <div className="mx-auto max-w-3xl px-4 py-20 sm:py-28">
+      <div className="mx-auto max-w-3xl px-4 pt-32 pb-20 sm:pt-36 sm:pb-28">
         <p className="text-xs font-medium uppercase tracking-widest text-gold mb-4">Contact</p>
         {settings.contact?.pageHeading && (
           <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">
