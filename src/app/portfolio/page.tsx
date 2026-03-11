@@ -66,15 +66,17 @@ export default async function PortfolioPage() {
                 href={`/portfolio/${project.slug.current}`}
                 className="group"
               >
-                <div className="relative h-64 rounded-lg overflow-hidden mb-4">
-                  <Image
-                    src={urlFor(project.coverImage).width(600).height(400).url()}
-                    alt={project.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
+                {project.coverImage && (
+                  <div className="relative h-64 rounded-lg overflow-hidden mb-4">
+                    <Image
+                      src={urlFor(project.coverImage).width(600).height(400).url()}
+                      alt={project.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  </div>
+                )}
                 <h2 className="font-serif text-xl text-charcoal mb-1">{project.title}</h2>
                 {project.clientName && (
                   <p className="text-sm text-gray-500">{project.clientName}</p>

@@ -167,9 +167,38 @@ export function PortfolioTab({ ctx }: PortfolioTabProps) {
       portfolio: { pageHeading, pageSubheading, testimonialsHeading },
       _rev: settingsRev,
     })
+    if (res.success && res.data) {
+      setSettingsSaving(false)
+      setSettingsRev(res.data._rev)
+      ctx.addNotification({ type: 'success', message: 'Portfolio page settings saved.' })
+      return
+    }
+    if (res.error?.code === 'CONFLICT') {
+      // Refetch latest _rev and auto-retry once
+      const freshRes = await adminGet<{ _rev: string }>('/api/admin/site-settings')
+      if (freshRes.success && freshRes.data) {
+        setSettingsRev(freshRes.data._rev)
+        const retryRes = await adminPut<{ _rev: string }>('/api/admin/site-settings', {
+          portfolio: { pageHeading, pageSubheading, testimonialsHeading },
+          _rev: freshRes.data._rev,
+        })
+        setSettingsSaving(false)
+        if (retryRes.success && retryRes.data) {
+          setSettingsRev(retryRes.data._rev)
+          ctx.addNotification({ type: 'success', message: 'Portfolio page settings saved.' })
+          return
+        }
+        if (retryRes.error?.code === 'CONFLICT') {
+          ctx.addNotification({ type: 'error', message: 'Someone else updated settings at the same time. Please refresh and try again.' })
+          return
+        }
+      }
+      setSettingsSaving(false)
+      ctx.addNotification({ type: 'error', message: 'Someone else updated settings at the same time. Please refresh and try again.' })
+      return
+    }
     setSettingsSaving(false)
-    if (res.success && res.data) { setSettingsRev(res.data._rev); ctx.addNotification({ type: 'success', message: 'Portfolio page settings saved.' }) }
-    else ctx.addNotification({ type: 'error', message: getErrorMessage(res.error?.code ?? 'SERVER_ERROR') })
+    ctx.addNotification({ type: 'error', message: getErrorMessage(res.error?.code ?? 'SERVER_ERROR') })
   }
 
   function updateForm(patch: Partial<ProjectForm>) { setForm((prev) => ({ ...prev, ...patch })); setDirty(true) }

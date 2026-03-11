@@ -98,16 +98,18 @@ export default async function ProjectDetailPage({ params }: Props) {
         )}
 
         {/* Cover Image */}
-        <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12">
-          <Image
-            src={urlFor(project.coverImage).width(1200).height(600).url()}
-            alt={project.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 896px) 100vw, 896px"
-            priority
-          />
-        </div>
+        {project.coverImage && (
+          <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12">
+            <Image
+              src={urlFor(project.coverImage).width(1200).height(600).url()}
+              alt={project.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 896px) 100vw, 896px"
+              priority
+            />
+          </div>
+        )}
 
         {/* Body */}
         {project.body && <PortableTextRenderer value={project.body} />}

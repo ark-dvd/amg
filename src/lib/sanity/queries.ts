@@ -100,7 +100,7 @@ export async function getAllServiceSlugs(): Promise<string[]> {
 export async function getActiveProjects(): Promise<ProjectDocument[]> {
   try {
     return await readClient.fetch<ProjectDocument[]>(
-      '*[_type == "project" && isActive == true && isArchived == false] | order(order asc)'
+      '*[_type == "project" && isActive == true && isArchived == false && defined(coverImage)] | order(order asc)'
     )
   } catch (error) {
     logIsrError('/portfolio', error)
@@ -111,7 +111,7 @@ export async function getActiveProjects(): Promise<ProjectDocument[]> {
 export async function getFeaturedProjects(): Promise<ProjectDocument[]> {
   try {
     return await readClient.fetch<ProjectDocument[]>(
-      '*[_type == "project" && isActive == true && isArchived == false && featuredOnHomepage == true] | order(order asc)'
+      '*[_type == "project" && isActive == true && isArchived == false && featuredOnHomepage == true && defined(coverImage)] | order(order asc)'
     )
   } catch (error) {
     logIsrError('/', error)
