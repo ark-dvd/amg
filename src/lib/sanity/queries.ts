@@ -84,10 +84,10 @@ export async function getServiceBySlug(slug: string): Promise<ServiceDocument | 
   }
 }
 
-export async function getAllServiceSlugs(): Promise<string[]> {
+export async function getAllServiceSlugs(): Promise<{ slug: string; _updatedAt: string }[]> {
   try {
-    return await readClient.fetch<string[]>(
-      '*[_type == "service" && isActive == true].slug.current'
+    return await readClient.fetch<{ slug: string; _updatedAt: string }[]>(
+      '*[_type == "service" && isActive == true]{ "slug": slug.current, _updatedAt }'
     )
   } catch (error) {
     logIsrError('/services/[slugs]', error)
@@ -131,10 +131,10 @@ export async function getProjectBySlug(slug: string): Promise<ProjectDocument | 
   }
 }
 
-export async function getAllProjectSlugs(): Promise<string[]> {
+export async function getAllProjectSlugs(): Promise<{ slug: string; _updatedAt: string }[]> {
   try {
-    return await readClient.fetch<string[]>(
-      '*[_type == "project" && isActive == true && isArchived == false].slug.current'
+    return await readClient.fetch<{ slug: string; _updatedAt: string }[]>(
+      '*[_type == "project" && isActive == true && isArchived == false && defined(coverImage)]{ "slug": slug.current, _updatedAt }'
     )
   } catch (error) {
     logIsrError('/portfolio/[slugs]', error)
@@ -192,10 +192,10 @@ export async function getArticleBySlug(slug: string): Promise<ArticleDocument | 
   }
 }
 
-export async function getAllArticleSlugs(): Promise<string[]> {
+export async function getAllArticleSlugs(): Promise<{ slug: string; _updatedAt: string }[]> {
   try {
-    return await readClient.fetch<string[]>(
-      '*[_type == "article" && isPublished == true && isDraft == false].slug.current'
+    return await readClient.fetch<{ slug: string; _updatedAt: string }[]>(
+      '*[_type == "article" && isPublished == true && isDraft == false]{ "slug": slug.current, _updatedAt }'
     )
   } catch (error) {
     logIsrError('/insights/[slugs]', error)

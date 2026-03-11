@@ -29,3 +29,18 @@ export function fileUrl(ref: string): string {
   if (!match) return ''
   return `https://cdn.sanity.io/files/${projectId}/${dataset}/${match[1]}.${match[2]}`
 }
+
+/**
+ * Derive MIME type from a Sanity file asset _ref.
+ * Example: "file-abc123-mp4" → "video/mp4"
+ */
+export function fileMimeType(ref: string): string {
+  const ext = ref.split('-').pop()?.toLowerCase()
+  const map: Record<string, string> = {
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    ogg: 'video/ogg',
+    ogv: 'video/ogg',
+  }
+  return map[ext ?? ''] ?? 'video/mp4'
+}
