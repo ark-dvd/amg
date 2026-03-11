@@ -106,7 +106,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     },
     readBack: async () => {
       if (!createdId) return null
-      return readClient.fetch<ServiceDocument | null>('*[_id == $id][0]', {
+      return writeClient.fetch<ServiceDocument | null>('*[_id == $id][0]', {
         id: createdId,
       })
     },

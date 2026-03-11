@@ -136,7 +136,7 @@ const siteSettingsSchema = z.object({
 })
 
 async function fetchSettings(): Promise<SiteSettingsDocument | null> {
-  return readClient.fetch<SiteSettingsDocument | null>('*[_id == $id][0]', {
+  return writeClient.fetch<SiteSettingsDocument | null>('*[_id == $id][0]', {
     id: SINGLETON_ID,
   })
 }

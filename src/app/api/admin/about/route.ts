@@ -39,7 +39,7 @@ const aboutSchema = z.object({
 })
 
 async function fetchAbout(): Promise<AboutDocument | null> {
-  return readClient.fetch<AboutDocument | null>('*[_id == $id][0]', {
+  return writeClient.fetch<AboutDocument | null>('*[_id == $id][0]', {
     id: SINGLETON_ID,
   })
 }

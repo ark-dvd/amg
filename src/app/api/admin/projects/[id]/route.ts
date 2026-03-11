@@ -32,7 +32,7 @@ const updateProjectSchema = z.object({
 })
 
 async function fetchProject(id: string): Promise<ProjectDocument | null> {
-  return readClient.fetch<ProjectDocument | null>('*[_id == $id][0]', { id })
+  return writeClient.fetch<ProjectDocument | null>('*[_id == $id][0]', { id })
 }
 
 export const GET = withErrorHandler(

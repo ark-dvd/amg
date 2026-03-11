@@ -103,7 +103,7 @@ export const PATCH = withErrorHandler(
         await transaction.commit()
       },
       readBack: async () =>
-        readClient.fetch<ProjectDocument | null>('*[_id == $id][0]', { id }),
+        writeClient.fetch<ProjectDocument | null>('*[_id == $id][0]', { id }),
       verifyReadBack: (doc) =>
         doc._id === id && doc._rev !== preWriteRev && doc.isArchived === false,
     })

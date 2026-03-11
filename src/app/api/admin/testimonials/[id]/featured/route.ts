@@ -69,7 +69,7 @@ export const PATCH = withErrorHandler(
           .commit()
       },
       readBack: async () =>
-        readClient.fetch<TestimonialDocument | null>('*[_id == $id][0]', { id }),
+        writeClient.fetch<TestimonialDocument | null>('*[_id == $id][0]', { id }),
       verifyReadBack: (doc) =>
         doc._id === id && doc._rev !== preWriteRev,
     })

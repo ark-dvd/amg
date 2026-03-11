@@ -27,7 +27,7 @@ const updateArticleSchema = z.object({
 })
 
 async function fetchArticle(id: string): Promise<ArticleDocument | null> {
-  return readClient.fetch<ArticleDocument | null>('*[_id == $id][0]', { id })
+  return writeClient.fetch<ArticleDocument | null>('*[_id == $id][0]', { id })
 }
 
 export const GET = withErrorHandler(

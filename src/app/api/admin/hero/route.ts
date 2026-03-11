@@ -40,7 +40,7 @@ const heroSchema = z
   )
 
 async function fetchHero(): Promise<HeroDocument | null> {
-  return readClient.fetch<HeroDocument | null>('*[_id == $id][0]', {
+  return writeClient.fetch<HeroDocument | null>('*[_id == $id][0]', {
     id: SINGLETON_ID,
   })
 }

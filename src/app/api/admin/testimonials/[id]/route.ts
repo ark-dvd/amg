@@ -28,7 +28,7 @@ const updateTestimonialSchema = z.object({
 })
 
 async function fetchTestimonial(id: string): Promise<TestimonialDocument | null> {
-  return readClient.fetch<TestimonialDocument | null>('*[_id == $id][0]', { id })
+  return writeClient.fetch<TestimonialDocument | null>('*[_id == $id][0]', { id })
 }
 
 export const PUT = withErrorHandler(

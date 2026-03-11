@@ -27,7 +27,7 @@ const updateServiceSchema = z.object({
 })
 
 async function fetchService(id: string): Promise<ServiceDocument | null> {
-  return readClient.fetch<ServiceDocument | null>('*[_id == $id][0]', { id })
+  return writeClient.fetch<ServiceDocument | null>('*[_id == $id][0]', { id })
 }
 
 export const GET = withErrorHandler(
