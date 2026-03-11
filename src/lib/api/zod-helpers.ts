@@ -21,7 +21,7 @@ export const sanityImageSchema = z.object({
     .optional(),
 })
 
-export const portableTextSchema = z.array(z.record(z.unknown())).min(1)
+export const portableTextSchema = z.array(z.record(z.unknown()))
 
 export const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
