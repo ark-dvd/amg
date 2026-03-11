@@ -19,7 +19,7 @@ const SINGLETON_ID = 'singleton.siteSettings'
 
 const siteSettingsSchema = z.object({
   // Section A: Identity
-  siteName: z.string().min(1).max(100),
+  siteName: z.string().min(1).max(100).optional(),
   tagline: z.string().max(150).optional(),
   logo: sanityImageSchema.optional(),
   favicon: sanityImageSchema.optional(),
@@ -204,19 +204,15 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
     entityId: SINGLETON_ID,
     preWriteRev,
     writeOperation: async () => {
-      await writeClient.createOrReplace({
-        _id: SINGLETON_ID,
-        _type: 'siteSettings',
-        ...fields,
-        updatedAt: new Date().toISOString(),
-      })
+      await writeClient
+        .patch(SINGLETON_ID)
+        .set({ ...fields, updatedAt: new Date().toISOString() })
+        .commit()
     },
     readBack: fetchSettings,
     verifyReadBack: (doc) =>
       doc._id === SINGLETON_ID &&
-      doc._rev !== preWriteRev &&
-      typeof doc.siteName === 'string' &&
-      doc.siteName.length > 0,
+      doc._rev !== preWriteRev,
   })
 
   if (!result.success) {
