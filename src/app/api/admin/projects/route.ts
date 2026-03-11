@@ -19,7 +19,6 @@ const createProjectSchema = z.object({
   projectType: z.string().max(80).optional(),
   technologies: z
     .array(z.string().max(50))
-    .min(1)
     .max(20)
     .optional(),
   coverImage: sanityImageSchema,

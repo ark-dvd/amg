@@ -19,7 +19,7 @@ const updateProjectSchema = z.object({
   shortDescription: z.string().min(1).max(250),
   body: portableTextSchema,
   projectType: z.string().max(80).optional(),
-  technologies: z.array(z.string().max(50)).min(1).max(20).optional(),
+  technologies: z.array(z.string().max(50)).max(20).optional(),
   coverImage: sanityImageSchema,
   screenshots: z.array(sanityImageSchema).max(20).optional(),
   completedAt: z.string().optional(),

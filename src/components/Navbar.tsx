@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
@@ -30,11 +31,29 @@ const navLinks = (nav: NavbarProps['nav']) => [
 
 export function Navbar({ siteName, logo, nav }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+  const isHome = pathname === '/'
   const links = navLinks(nav)
   const ctaLabel = nav?.ctaLabel ?? 'Get in Touch'
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const transparent = isHome && !scrolled && !mobileOpen
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        transparent
+          ? 'bg-transparent'
+          : 'bg-white/95 backdrop-blur-sm shadow-sm'
+      }`}
+    >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2">
           {logo ? (
@@ -43,10 +62,12 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
               alt={siteName}
               width={160}
               height={40}
-              className="h-8 w-auto"
+              className={`h-8 w-auto transition-all duration-300 ${transparent ? 'brightness-0 invert' : ''}`}
             />
           ) : (
-            <span className="font-serif text-xl font-semibold text-charcoal">{siteName}</span>
+            <span className={`font-serif text-xl font-semibold transition-colors duration-300 ${transparent ? 'text-white' : 'text-charcoal'}`}>
+              {siteName}
+            </span>
           )}
         </Link>
 
@@ -56,7 +77,11 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-gray-600 hover:text-charcoal transition-colors"
+              className={`text-sm transition-colors duration-300 ${
+                transparent
+                  ? 'text-white/80 hover:text-white'
+                  : 'text-gray-600 hover:text-charcoal'
+              }`}
             >
               {link.label}
             </Link>
@@ -72,7 +97,7 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
         {/* Mobile hamburger */}
         <button
           type="button"
-          className="md:hidden p-2 -mr-2 text-charcoal"
+          className={`md:hidden p-2 -mr-2 transition-colors duration-300 ${transparent ? 'text-white' : 'text-charcoal'}`}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
         >
