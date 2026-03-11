@@ -51,7 +51,7 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         transparent
           ? 'bg-transparent'
-          : 'bg-white/95 backdrop-blur-sm shadow-sm'
+          : 'bg-[rgba(247,245,242,0.96)] backdrop-blur-sm shadow-sm'
       }`}
     >
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -65,7 +65,7 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
               className={`h-8 w-auto transition-all duration-300 ${transparent ? 'brightness-0 invert' : ''}`}
             />
           ) : (
-            <span className={`font-serif text-xl font-semibold transition-colors duration-300 ${transparent ? 'text-white' : 'text-charcoal'}`}>
+            <span className={`font-serif text-2xl transition-colors duration-300 ${transparent ? 'text-white' : 'text-charcoal'}`}>
               {siteName}
             </span>
           )}
@@ -77,10 +77,10 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm transition-colors duration-300 ${
+              className={`text-sm tracking-wide transition-colors duration-300 ${
                 transparent
                   ? 'text-white/80 hover:text-white'
-                  : 'text-gray-600 hover:text-charcoal'
+                  : 'text-muted hover:text-gold'
               }`}
             >
               {link.label}
@@ -88,7 +88,7 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
           ))}
           <Link
             href="/contact"
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gold hover:bg-gold/90 rounded transition-colors"
+            className="inline-flex items-center px-5 py-2 text-xs font-medium uppercase tracking-widest text-white bg-gold hover:bg-transparent hover:text-gold border border-gold rounded transition-colors"
           >
             {ctaLabel}
           </Link>
@@ -107,13 +107,13 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white" role="dialog" aria-modal="true" aria-label="Navigation">
+        <div className="md:hidden border-t border-border bg-surface" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="px-4 py-4 space-y-3">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="block text-base text-gray-600 hover:text-charcoal py-2"
+                className="block text-base text-muted hover:text-gold py-2"
                 onClick={() => setMobileOpen(false)}
               >
                 {link.label}
@@ -121,7 +121,7 @@ export function Navbar({ siteName, logo, nav }: NavbarProps) {
             ))}
             <Link
               href="/contact"
-              className="block w-full text-center px-4 py-3 text-sm font-medium text-white bg-gold hover:bg-gold/90 rounded transition-colors"
+              className="block w-full text-center px-4 py-3 text-xs font-medium uppercase tracking-widest text-white bg-gold hover:bg-transparent hover:text-gold border border-gold rounded transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               {ctaLabel}

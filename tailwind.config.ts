@@ -6,12 +6,16 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        serif: ['Cormorant Garamond', 'serif'],
+        sans: ['DM Sans', 'sans-serif'],
+        serif: ['Instrument Serif', 'serif'],
       },
       colors: {
-        gold: '#b8a06a',
+        gold: '#b09060',
+        'accent-light': '#c9a96e',
         charcoal: '#1a1a1a',
+        surface: '#f7f5f2',
+        border: '#e8e4df',
+        muted: '#6b6560',
       },
     },
   },

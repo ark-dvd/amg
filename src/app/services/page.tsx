@@ -43,18 +43,19 @@ export default async function ServicesPage() {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:py-28">
+        <p className="text-xs font-medium uppercase tracking-widest text-gold mb-4">Services</p>
         {settings.services?.pageHeading && (
           <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">
             {settings.services.pageHeading}
           </h1>
         )}
         {settings.services?.pageSubheading && (
-          <p className="text-xl text-gray-600 mb-12">{settings.services.pageSubheading}</p>
+          <p className="text-xl text-muted mb-14">{settings.services.pageSubheading}</p>
         )}
 
         {services.length === 0 ? (
-          <p className="text-gray-500 text-lg">
+          <p className="text-muted text-lg">
             {settings.empty?.servicesMessage ?? ''}
           </p>
         ) : (
@@ -63,7 +64,7 @@ export default async function ServicesPage() {
               <Link
                 key={service._id}
                 href={`/services/${service.slug.current}`}
-                className="group bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                className="group border border-border rounded-lg overflow-hidden hover:-translate-y-1 transition-transform duration-300"
               >
                 {service.coverImage && (
                   <div className="relative h-48">
@@ -78,7 +79,7 @@ export default async function ServicesPage() {
                 )}
                 <div className="p-6">
                   <h2 className="font-serif text-xl text-charcoal mb-2">{service.title}</h2>
-                  <p className="text-gray-600 text-sm">{service.shortDescription}</p>
+                  <p className="text-muted text-sm">{service.shortDescription}</p>
                 </div>
               </Link>
             ))}

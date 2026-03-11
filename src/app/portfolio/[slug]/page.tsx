@@ -71,15 +71,16 @@ export default async function ProjectDetailPage({ params }: Props) {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <article className="mx-auto max-w-4xl px-4 py-16 sm:py-24">
+      <article className="mx-auto max-w-4xl px-4 py-20 sm:py-28">
+        <p className="text-xs font-medium uppercase tracking-widest text-gold mb-4">Project</p>
         <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">{project.title}</h1>
         {project.clientName && (
-          <p className="text-lg text-gray-500 mb-2">{project.clientName}</p>
+          <p className="text-lg text-muted mb-2">{project.clientName}</p>
         )}
-        <p className="text-xl text-gray-600 mb-8">{project.shortDescription}</p>
+        <p className="text-xl text-muted mb-8">{project.shortDescription}</p>
 
         {/* Meta info */}
-        <div className="flex flex-wrap gap-4 mb-8 text-sm text-gray-500">
+        <div className="flex flex-wrap gap-4 mb-8 text-sm text-muted">
           {project.projectType && <span>{project.projectType}</span>}
           {project.completedAt && (
             <span>{new Date(project.completedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</span>
@@ -90,7 +91,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         {project.technologies && project.technologies.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8">
             {project.technologies.map((tech) => (
-              <span key={tech} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+              <span key={tech} className="px-3 py-1 border border-border text-muted text-sm rounded-full">
                 {tech}
               </span>
             ))}
@@ -99,7 +100,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
         {/* Cover Image */}
         {project.coverImage && (
-          <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12">
+          <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12 border border-border">
             <Image
               src={urlFor(project.coverImage).width(1200).height(600).url()}
               alt={project.title}
@@ -118,7 +119,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         {project.screenshots && project.screenshots.length > 0 && (
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {project.screenshots.map((screenshot, i) => (
-              <div key={i} className="relative h-48 sm:h-64 rounded-lg overflow-hidden">
+              <div key={i} className="relative h-48 sm:h-64 rounded-lg overflow-hidden border border-border">
                 <Image
                   src={urlFor(screenshot).width(800).height(500).url()}
                   alt={`${project.title} screenshot ${i + 1}`}
@@ -133,11 +134,11 @@ export default async function ProjectDetailPage({ params }: Props) {
 
         {/* Testimonials */}
         {testimonials.length > 0 && (
-          <section className="mt-16">
+          <section className="mt-20">
             <div className="space-y-6">
               {testimonials.map((t) => (
-                <blockquote key={t._id} className="bg-gray-50 p-6 rounded-lg">
-                  <p className="text-gray-700 italic mb-4">&ldquo;{t.quote}&rdquo;</p>
+                <blockquote key={t._id} className="border border-border rounded-lg p-6">
+                  <p className="text-muted italic mb-4">&ldquo;{t.quote}&rdquo;</p>
                   <footer className="flex items-center gap-3">
                     {t.authorPhoto && (
                       <Image
@@ -151,7 +152,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                     <div>
                       <p className="font-medium text-charcoal text-sm">{t.authorName}</p>
                       {t.authorRole && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted">
                           {t.authorRole}
                           {t.authorCompany ? `, ${t.authorCompany}` : ''}
                         </p>

@@ -7,7 +7,7 @@ interface PortableTextRendererProps {
 
 export function PortableTextRenderer({ value }: PortableTextRendererProps) {
   return (
-    <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-charcoal prose-a:text-gold prose-a:underline hover:prose-a:text-gold/80">
+    <div className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-charcoal prose-p:text-muted prose-a:text-gold prose-a:underline hover:prose-a:text-accent-light">
       <PortableText value={value} />
     </div>
   )

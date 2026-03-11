@@ -43,18 +43,19 @@ export default async function InsightsPage() {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:py-28">
+        <p className="text-xs font-medium uppercase tracking-widest text-gold mb-4">Insights</p>
         {settings.insights?.pageHeading && (
           <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">
             {settings.insights.pageHeading}
           </h1>
         )}
         {settings.insights?.pageSubheading && (
-          <p className="text-xl text-gray-600 mb-12">{settings.insights.pageSubheading}</p>
+          <p className="text-xl text-muted mb-14">{settings.insights.pageSubheading}</p>
         )}
 
         {articles.length === 0 ? (
-          <p className="text-gray-500 text-lg">
+          <p className="text-muted text-lg">
             {settings.empty?.insightsMessage ?? ''}
           </p>
         ) : (
@@ -66,7 +67,7 @@ export default async function InsightsPage() {
                 className="group"
               >
                 {article.coverImage && (
-                  <div className="relative h-48 rounded-lg overflow-hidden mb-4">
+                  <div className="relative h-48 rounded-lg overflow-hidden mb-4 border border-border">
                     <Image
                       src={urlFor(article.coverImage).width(600).height(400).url()}
                       alt={article.title}
@@ -76,7 +77,7 @@ export default async function InsightsPage() {
                     />
                   </div>
                 )}
-                <div className="flex items-center gap-3 text-sm text-gray-500 mb-2">
+                <div className="flex items-center gap-3 text-sm text-muted mb-2">
                   {article.category && <span>{article.category}</span>}
                   {article.publishedAt && (
                     <time dateTime={article.publishedAt}>
@@ -89,7 +90,7 @@ export default async function InsightsPage() {
                   )}
                 </div>
                 <h2 className="font-serif text-xl text-charcoal mb-2">{article.title}</h2>
-                <p className="text-gray-600 text-sm">{article.excerpt}</p>
+                <p className="text-muted text-sm">{article.excerpt}</p>
               </Link>
             ))}
           </div>

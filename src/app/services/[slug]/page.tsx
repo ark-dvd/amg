@@ -68,12 +68,13 @@ export default async function ServiceDetailPage({ params }: Props) {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <article className="mx-auto max-w-4xl px-4 py-16 sm:py-24">
+      <article className="mx-auto max-w-4xl px-4 py-20 sm:py-28">
+        <p className="text-xs font-medium uppercase tracking-widest text-gold mb-4">Service</p>
         <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">{service.title}</h1>
-        <p className="text-xl text-gray-600 mb-8">{service.shortDescription}</p>
+        <p className="text-xl text-muted mb-8">{service.shortDescription}</p>
 
         {service.coverImage && (
-          <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12">
+          <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12 border border-border">
             <Image
               src={urlFor(service.coverImage).width(1200).height(600).url()}
               alt={service.title}

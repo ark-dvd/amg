@@ -82,10 +82,10 @@ export default async function ArticleDetailPage({ params }: Props) {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <article className="mx-auto max-w-4xl px-4 py-16 sm:py-24">
+      <article className="mx-auto max-w-4xl px-4 py-20 sm:py-28">
         <header className="mb-12">
-          <div className="flex items-center gap-3 text-sm text-gray-500 mb-4">
-            {article.category && <span>{article.category}</span>}
+          <div className="flex items-center gap-3 text-sm text-muted mb-4">
+            {article.category && <span className="text-xs font-medium uppercase tracking-widest text-gold">{article.category}</span>}
             {article.publishedAt && (
               <time dateTime={article.publishedAt}>
                 {new Date(article.publishedAt).toLocaleDateString('en-US', {
@@ -97,16 +97,16 @@ export default async function ArticleDetailPage({ params }: Props) {
             )}
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">{article.title}</h1>
-          <p className="text-xl text-gray-600 mb-4">{article.excerpt}</p>
+          <p className="text-xl text-muted mb-4">{article.excerpt}</p>
           {article.authorName && (
-            <p className="text-sm text-gray-500">{article.authorName}</p>
+            <p className="text-sm text-muted">{article.authorName}</p>
           )}
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
               {article.tags.map((tag) => (
-                <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+                <span key={tag} className="px-3 py-1 border border-border text-muted text-sm rounded-full">
                   {tag}
                 </span>
               ))}
@@ -115,7 +115,7 @@ export default async function ArticleDetailPage({ params }: Props) {
         </header>
 
         {article.coverImage && (
-          <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12">
+          <div className="relative h-64 sm:h-96 rounded-lg overflow-hidden mb-12 border border-border">
             <Image
               src={urlFor(article.coverImage).width(1200).height(600).url()}
               alt={article.title}

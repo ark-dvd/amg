@@ -5,7 +5,7 @@ import { JsonLd } from '@/components/JsonLd'
 import type { Metadata } from 'next'
 
 const ContactForm = dynamic(() => import('./ContactForm').then(m => m.ContactForm), {
-  loading: () => <div className="animate-pulse h-96 bg-gray-100 rounded" />,
+  loading: () => <div className="animate-pulse h-96 bg-border/50 rounded-lg" />,
 })
 
 export const revalidate = 60
@@ -46,14 +46,15 @@ export default async function ContactPage() {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <div className="mx-auto max-w-3xl px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-3xl px-4 py-20 sm:py-28">
+        <p className="text-xs font-medium uppercase tracking-widest text-gold mb-4">Contact</p>
         {settings.contact?.pageHeading && (
           <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">
             {settings.contact.pageHeading}
           </h1>
         )}
         {settings.contact?.pageSubheading && (
-          <p className="text-xl text-gray-600 mb-12">{settings.contact.pageSubheading}</p>
+          <p className="text-xl text-muted mb-14">{settings.contact.pageSubheading}</p>
         )}
 
         <ContactForm

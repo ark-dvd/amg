@@ -75,7 +75,7 @@ export function ContactForm({ labels }: ContactFormProps) {
           id="name"
           name="name"
           required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base"
+          className="w-full px-4 py-3 bg-white border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base transition-colors"
         />
       </div>
 
@@ -88,7 +88,7 @@ export function ContactForm({ labels }: ContactFormProps) {
           id="email"
           name="email"
           required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base"
+          className="w-full px-4 py-3 bg-white border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base transition-colors"
         />
       </div>
 
@@ -100,7 +100,7 @@ export function ContactForm({ labels }: ContactFormProps) {
           type="tel"
           id="phone"
           name="phone"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base"
+          className="w-full px-4 py-3 bg-white border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base transition-colors"
         />
       </div>
 
@@ -112,7 +112,7 @@ export function ContactForm({ labels }: ContactFormProps) {
           type="text"
           id="company"
           name="company"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base"
+          className="w-full px-4 py-3 bg-white border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base transition-colors"
         />
       </div>
 
@@ -125,14 +125,14 @@ export function ContactForm({ labels }: ContactFormProps) {
           name="message"
           required
           rows={4}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base resize-y"
+          className="w-full px-4 py-3 bg-white border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold text-base resize-y transition-colors"
         />
       </div>
 
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="w-full sm:w-auto px-8 py-3 bg-gold hover:bg-gold/90 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full sm:w-auto px-8 py-3 text-xs font-medium uppercase tracking-widest bg-gold hover:bg-transparent text-white hover:text-gold border border-gold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {status === 'submitting' ? 'Sending...' : labels.submit}
       </button>

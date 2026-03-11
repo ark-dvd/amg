@@ -44,18 +44,19 @@ export default async function PortfolioPage() {
   return (
     <>
       <JsonLd data={jsonLd} />
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:py-28">
+        <p className="text-xs font-medium uppercase tracking-widest text-gold mb-4">Portfolio</p>
         {settings.portfolio?.pageHeading && (
           <h1 className="font-serif text-4xl sm:text-5xl text-charcoal mb-4">
             {settings.portfolio.pageHeading}
           </h1>
         )}
         {settings.portfolio?.pageSubheading && (
-          <p className="text-xl text-gray-600 mb-12">{settings.portfolio.pageSubheading}</p>
+          <p className="text-xl text-muted mb-14">{settings.portfolio.pageSubheading}</p>
         )}
 
         {projects.length === 0 ? (
-          <p className="text-gray-500 text-lg">
+          <p className="text-muted text-lg">
             {settings.empty?.portfolioMessage ?? ''}
           </p>
         ) : (
@@ -67,7 +68,7 @@ export default async function PortfolioPage() {
                 className="group"
               >
                 {project.coverImage && (
-                  <div className="relative h-64 rounded-lg overflow-hidden mb-4">
+                  <div className="relative h-64 rounded-lg overflow-hidden mb-4 border border-border">
                     <Image
                       src={urlFor(project.coverImage).width(600).height(400).url()}
                       alt={project.title}
@@ -79,9 +80,9 @@ export default async function PortfolioPage() {
                 )}
                 <h2 className="font-serif text-xl text-charcoal mb-1">{project.title}</h2>
                 {project.clientName && (
-                  <p className="text-sm text-gray-500">{project.clientName}</p>
+                  <p className="text-sm text-muted">{project.clientName}</p>
                 )}
-                <p className="text-gray-600 text-sm mt-2">{project.shortDescription}</p>
+                <p className="text-muted text-sm mt-2">{project.shortDescription}</p>
               </Link>
             ))}
           </div>
@@ -89,16 +90,16 @@ export default async function PortfolioPage() {
 
         {/* Testimonials */}
         {testimonials.length > 0 && (
-          <section className="mt-20">
+          <section className="mt-24">
             {settings.portfolio?.testimonialsHeading && (
-              <h2 className="font-serif text-3xl text-charcoal mb-8">
+              <h2 className="font-serif text-3xl text-charcoal mb-10">
                 {settings.portfolio.testimonialsHeading}
               </h2>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {testimonials.map((t) => (
-                <blockquote key={t._id} className="bg-gray-50 p-6 rounded-lg">
-                  <p className="text-gray-700 italic mb-4">&ldquo;{t.quote}&rdquo;</p>
+                <blockquote key={t._id} className="border border-border rounded-lg p-6">
+                  <p className="text-muted italic mb-4">&ldquo;{t.quote}&rdquo;</p>
                   <footer className="flex items-center gap-3">
                     {t.authorPhoto && (
                       <Image
@@ -112,7 +113,7 @@ export default async function PortfolioPage() {
                     <div>
                       <p className="font-medium text-charcoal text-sm">{t.authorName}</p>
                       {t.authorRole && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted">
                           {t.authorRole}
                           {t.authorCompany ? `, ${t.authorCompany}` : ''}
                         </p>
