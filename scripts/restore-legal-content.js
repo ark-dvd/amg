@@ -1,9 +1,23 @@
 const { createClient } = require('@sanity/client')
+const { readFileSync } = require('fs')
+const { resolve } = require('path')
+
+// Load .env.local manually (no dotenv dependency)
+const envPath = resolve(__dirname, '..', '.env.local')
+for (const line of readFileSync(envPath, 'utf8').split('\n')) {
+  const trimmed = line.trim()
+  if (!trimmed || trimmed.startsWith('#')) continue
+  const eq = trimmed.indexOf('=')
+  if (eq === -1) continue
+  const key = trimmed.slice(0, eq).trim()
+  const val = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, '')
+  if (!process.env[key]) process.env[key] = val
+}
 
 const client = createClient({
-  projectId: 'ifw94eds',
-  dataset: 'production',
-  token: process.env.SANITY_API_TOKEN || '***REDACTED***',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
+  token: process.env.SANITY_API_TOKEN,
   apiVersion: '2024-01-01',
   useCdn: false,
 })
