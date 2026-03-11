@@ -34,15 +34,16 @@ export const hero = defineType({
         }),
     }),
     defineField({
-      name: 'videoUrl',
-      title: 'Video URL',
-      type: 'url',
+      name: 'videoAsset',
+      title: 'Video File',
+      type: 'file',
+      options: { accept: 'video/*' },
       hidden: ({ document }) => document?.mediaType !== 'video',
       validation: (rule) =>
         rule.custom((value, context) => {
           const doc = context.document
           if (doc?.mediaType === 'video' && !value) {
-            return 'Video URL is required when media type is "video"'
+            return 'Video file is required when media type is "video"'
           }
           return true
         }),

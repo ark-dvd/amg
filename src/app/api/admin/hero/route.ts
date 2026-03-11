@@ -12,7 +12,7 @@ import {
   errorResponse,
 } from '@/lib/api/response'
 import { withErrorHandler, getRequestId } from '@/lib/api/route-handler'
-import { sanityImageSchema } from '@/lib/api/zod-helpers'
+import { sanityImageSchema, sanityFileSchema } from '@/lib/api/zod-helpers'
 import type { HeroDocument } from '@/types/sanity'
 
 const SINGLETON_ID = 'singleton.hero'
@@ -21,7 +21,7 @@ const heroSchema = z
   .object({
     mediaType: z.enum(['image', 'video']),
     image: sanityImageSchema.optional(),
-    videoUrl: z.string().url().optional(),
+    videoAsset: sanityFileSchema.optional(),
     videoPoster: sanityImageSchema.optional(),
     headline: z.string().min(1).max(100),
     subheadline: z.string().max(250).optional(),
@@ -33,10 +33,10 @@ const heroSchema = z
   .refine(
     (data) => {
       if (data.mediaType === 'image' && !data.image) return false
-      if (data.mediaType === 'video' && !data.videoUrl) return false
+      if (data.mediaType === 'video' && !data.videoAsset) return false
       return true
     },
-    { message: 'Image required for image type; videoUrl required for video type' }
+    { message: 'Image required for image type; video file required for video type' }
   )
 
 async function fetchHero(): Promise<HeroDocument | null> {

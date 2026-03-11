@@ -6,14 +6,21 @@ import { successResponse, errorResponse } from '@/lib/api/response'
 import { withErrorHandler, getRequestId } from '@/lib/api/route-handler'
 import { logSecurityEvent } from '@/lib/logger'
 
-const ALLOWED_MIME_TYPES = new Set([
+const ALLOWED_IMAGE_TYPES = new Set([
   'image/jpeg',
   'image/png',
   'image/webp',
   'image/gif',
 ])
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+const ALLOWED_VIDEO_TYPES = new Set([
+  'video/mp4',
+  'video/webm',
+  'video/ogg',
+])
+
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10 MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024 // 50 MB
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const requestId = getRequestId(request)
@@ -57,22 +64,28 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     )
   }
 
-  if (!ALLOWED_MIME_TYPES.has(file.type)) {
+  const isImage = ALLOWED_IMAGE_TYPES.has(file.type)
+  const isVideo = ALLOWED_VIDEO_TYPES.has(file.type)
+
+  if (!isImage && !isVideo) {
     return errorResponse(
       'VALIDATION',
       'VALIDATION_FAILED',
-      'File type not allowed. Accepted: JPEG, PNG, WebP, GIF',
+      'File type not allowed. Accepted: JPEG, PNG, WebP, GIF, MP4, WebM, OGG',
       requestId,
       400,
       { fieldErrors: { file: `Invalid MIME type: ${file.type}` } }
     )
   }
 
-  if (file.size > MAX_FILE_SIZE) {
+  const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE
+  const maxLabel = isVideo ? '50 MB' : '10 MB'
+
+  if (file.size > maxSize) {
     return errorResponse(
       'VALIDATION',
       'VALIDATION_FAILED',
-      'File size exceeds 10 MB limit',
+      `File size exceeds ${maxLabel} limit`,
       requestId,
       400,
       { fieldErrors: { file: 'File too large' } }
@@ -81,8 +94,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const buffer = Buffer.from(await file.arrayBuffer())
   const filename = file instanceof File ? file.name : 'upload'
+  const assetType = isVideo ? 'file' : 'image'
 
-  const asset = await writeClient.assets.upload('image', buffer, {
+  const asset = await writeClient.assets.upload(assetType, buffer, {
     filename,
     contentType: file.type,
   })
@@ -91,8 +105,15 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     {
       assetId: asset._id,
       url: asset.url,
-      width: asset.metadata?.dimensions?.width ?? 0,
-      height: asset.metadata?.dimensions?.height ?? 0,
+      ...(isImage
+        ? {
+            width: asset.metadata?.dimensions?.width ?? 0,
+            height: asset.metadata?.dimensions?.height ?? 0,
+          }
+        : {
+            size: file.size,
+            mimeType: file.type,
+          }),
     },
     requestId
   )

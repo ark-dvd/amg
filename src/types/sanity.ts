@@ -32,11 +32,19 @@ interface SanityDocumentBase {
 
 // ─── Hero (Singleton) ───────────────────────────────────────────
 
+export interface SanityFileAsset {
+  _type: 'file'
+  asset: {
+    _ref: string
+    _type: 'reference'
+  }
+}
+
 export interface HeroDocument extends SanityDocumentBase {
   _type: 'hero'
   mediaType: 'image' | 'video'
   image?: SanityImage
-  videoUrl?: string
+  videoAsset?: SanityFileAsset
   videoPoster?: SanityImage
   headline: string
   subheadline?: string

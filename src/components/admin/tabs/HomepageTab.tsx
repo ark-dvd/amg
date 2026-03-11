@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { adminGet, adminPut, adminPatch, type ApiResponse } from '@/lib/admin/api-client'
 import { getErrorMessage } from '@/lib/admin/error-messages'
 import { ImageUpload } from '../ImageUpload'
+import { VideoUpload } from '../VideoUpload'
 import { CharacterCount } from '../CharacterCount'
 import { ToggleSwitch } from '../ToggleSwitch'
-import { VideoPreviewModal } from '../VideoPreviewModal'
 import { SkeletonForm } from '../SkeletonRow'
 import type { TabContext } from '../AdminShell'
-import type { HeroDocument, AboutDocument, SiteSettingsDocument, ProjectDocument, TestimonialDocument } from '@/types/sanity'
+import type { HeroDocument, AboutDocument, SiteSettingsDocument, ProjectDocument, TestimonialDocument, SanityFileAsset } from '@/types/sanity'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 
 interface HomepageTabProps {
@@ -68,7 +68,7 @@ export function HomepageTab({ ctx }: HomepageTabProps) {
   // Hero form state
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image')
   const [heroImage, setHeroImage] = useState<HeroDocument['image']>(undefined)
-  const [videoUrl, setVideoUrl] = useState('')
+  const [videoAsset, setVideoAsset] = useState<SanityFileAsset | null>(null)
   const [videoPoster, setVideoPoster] = useState<HeroDocument['videoPoster']>(undefined)
   const [headline, setHeadline] = useState('')
   const [subheadline, setSubheadline] = useState('')
@@ -77,7 +77,6 @@ export function HomepageTab({ ctx }: HomepageTabProps) {
   const [overlayOpacity, setOverlayOpacity] = useState(40)
   const [heroSaving, setHeroSaving] = useState(false)
   const [heroConflict, setHeroConflict] = useState(false)
-  const [videoPreviewOpen, setVideoPreviewOpen] = useState(false)
 
   // Settings section states
   const [servicesHeading, setServicesHeading] = useState('')
@@ -107,7 +106,7 @@ export function HomepageTab({ ctx }: HomepageTabProps) {
       setHeroRev(h._rev)
       setMediaType(h.mediaType)
       setHeroImage(h.image)
-      setVideoUrl(h.videoUrl ?? '')
+      setVideoAsset(h.videoAsset ?? null)
       setVideoPoster(h.videoPoster)
       setHeadline(h.headline)
       setSubheadline(h.subheadline ?? '')
@@ -151,7 +150,7 @@ export function HomepageTab({ ctx }: HomepageTabProps) {
     setHeroConflict(false)
     const body = {
       mediaType,
-      ...(mediaType === 'image' ? { image: heroImage } : { videoUrl, videoPoster }),
+      ...(mediaType === 'image' ? { image: heroImage } : { videoAsset: videoAsset ?? undefined, videoPoster }),
       headline,
       subheadline: subheadline || undefined,
       ctaLabel,
@@ -253,13 +252,7 @@ export function HomepageTab({ ctx }: HomepageTabProps) {
               <ImageUpload value={heroImage ?? null} onChange={(v) => setHeroImage(v ?? undefined)} label="Hero Image" />
             ) : (
               <div className="space-y-4">
-                <div>
-                  <label htmlFor="hero-video-url" className="block text-sm font-medium text-gray-700 mb-1">Video URL</label>
-                  <div className="flex gap-2">
-                    <input id="hero-video-url" type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2" />
-                    <button type="button" onClick={() => setVideoPreviewOpen(true)} disabled={!videoUrl} className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg min-h-[44px] disabled:opacity-50">Preview</button>
-                  </div>
-                </div>
+                <VideoUpload value={videoAsset} onChange={(v) => setVideoAsset(v)} label="Video File" />
                 <ImageUpload value={videoPoster ?? null} onChange={(v) => setVideoPoster(v ?? undefined)} label="Video Poster Image" />
               </div>
             )}
@@ -296,7 +289,6 @@ export function HomepageTab({ ctx }: HomepageTabProps) {
             <SaveButton saving={heroSaving} onClick={saveHero} />
           </div>
         )}
-        <VideoPreviewModal isOpen={videoPreviewOpen} url={videoUrl} onClose={() => setVideoPreviewOpen(false)} />
       </Section>
 
       {/* About Preview */}

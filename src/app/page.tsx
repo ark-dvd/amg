@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getSiteSettings, getHero, getAbout, getActiveServices, getFeaturedProjects, getFeaturedTestimonials, getPublishedArticles } from '@/lib/sanity/queries'
 import { urlFor } from '@/lib/sanity/image'
+import { fileUrl } from '@/lib/sanity/client'
 import { buildMetadata, buildOrganizationJsonLd, buildWebSiteJsonLd, buildJsonLdScript } from '@/lib/seo'
 import { JsonLd } from '@/components/JsonLd'
 import type { Metadata } from 'next'
@@ -45,7 +46,7 @@ export default async function HomePage() {
       {/* Hero Section */}
       {hero && (
         <section className="relative h-screen min-h-[600px] -mt-16 flex items-center justify-center overflow-hidden">
-          {hero.mediaType === 'video' && hero.videoUrl ? (
+          {hero.mediaType === 'video' && hero.videoAsset?.asset?._ref ? (
             <>
               {hero.videoPoster && (
                 <Image
@@ -65,7 +66,7 @@ export default async function HomePage() {
                 className="absolute inset-0 w-full h-full object-cover"
                 poster={hero.videoPoster ? urlFor(hero.videoPoster).width(1920).height(1080).url() : undefined}
               >
-                <source src={hero.videoUrl} />
+                <source src={fileUrl(hero.videoAsset.asset._ref)} />
               </video>
             </>
           ) : hero.image ? (
