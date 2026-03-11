@@ -56,6 +56,7 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
           403
         )
       }
+      console.error(`[${requestId}] Unhandled error in ${request.nextUrl.pathname}:`, error)
       return errorResponse(
         'SERVER',
         'SERVER_ERROR',
