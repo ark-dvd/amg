@@ -22,7 +22,7 @@ const createProjectSchema = z.object({
     .max(20)
     .optional(),
   coverImage: sanityImageSchema,
-  screenshots: z.array(sanityImageSchema).max(20).optional(),
+  screenshots: z.array(sanityImageSchema).max(9).optional(),
   completedAt: z.string().optional(),
   isActive: z.boolean().default(false),
   featuredOnHomepage: z.boolean().default(false),
@@ -109,7 +109,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         projectType: data.projectType,
         technologies: data.technologies,
         coverImage: data.coverImage,
-        screenshots: data.screenshots,
+        ...(data.screenshots && data.screenshots.length > 0 ? { screenshots: data.screenshots } : {}),
         completedAt: data.completedAt,
         isActive: data.isActive,
         featuredOnHomepage: data.featuredOnHomepage,

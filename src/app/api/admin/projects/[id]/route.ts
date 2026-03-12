@@ -21,7 +21,7 @@ const updateProjectSchema = z.object({
   projectType: z.string().max(80).optional(),
   technologies: z.array(z.string().max(50)).max(20).optional(),
   coverImage: sanityImageSchema,
-  screenshots: z.array(sanityImageSchema).max(20).optional(),
+  screenshots: z.array(sanityImageSchema).max(9).optional(),
   completedAt: z.string().optional(),
   isActive: z.boolean(),
   featuredOnHomepage: z.boolean().default(false),
@@ -100,7 +100,8 @@ export const PUT = withErrorHandler(
       entityId: id,
       preWriteRev,
       writeOperation: async () => {
-        await writeClient
+        const hasScreenshots = fields.screenshots && fields.screenshots.length > 0
+        const patch = writeClient
           .patch(id)
           .set({
             title: fields.title,
@@ -111,7 +112,7 @@ export const PUT = withErrorHandler(
             projectType: fields.projectType,
             technologies: fields.technologies,
             coverImage: fields.coverImage,
-            screenshots: fields.screenshots,
+            ...(hasScreenshots ? { screenshots: fields.screenshots } : {}),
             completedAt: fields.completedAt,
             isActive: fields.isActive,
             featuredOnHomepage: fields.featuredOnHomepage,
@@ -120,7 +121,10 @@ export const PUT = withErrorHandler(
             seoDescription: fields.seoDescription,
             updatedAt: new Date().toISOString(),
           })
-          .commit()
+        if (!hasScreenshots) {
+          patch.unset(['screenshots'])
+        }
+        await patch.commit()
       },
       readBack: () => fetchProject(id),
       verifyReadBack: (doc) =>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { adminGet, adminPost, adminPut, adminPatch, adminDelete } from '@/lib/admin/api-client'
 import { getErrorMessage } from '@/lib/admin/error-messages'
 import { StatusBadge } from '../StatusBadge'
@@ -9,6 +10,7 @@ import { SlideOver } from '../SlideOver'
 import { ConfirmDialog } from '../ConfirmDialog'
 import { PermanentDeleteDialog } from '../PermanentDeleteDialog'
 import { ImageUpload } from '../ImageUpload'
+import { urlFor } from '@/lib/sanity/image'
 import { CharacterCount } from '../CharacterCount'
 import { SlugField } from '../SlugField'
 import { PortableTextEditor } from '../PortableTextEditor'
@@ -16,22 +18,23 @@ import { SkeletonRow } from '../SkeletonRow'
 import { ReorderableList } from '../ReorderableList'
 import type { TabContext } from '../AdminShell'
 import type { ProjectDocument, TestimonialDocument, SanityImage, PortableTextContent } from '@/types/sanity'
-import { Pencil, Archive, RotateCcw, Trash2, MoreVertical, Plus } from 'lucide-react'
+import { Pencil, Archive, RotateCcw, Trash2, MoreVertical, Plus, Upload, RefreshCw, X as XIcon } from 'lucide-react'
 
 interface PortfolioTabProps { ctx: TabContext }
 
 interface ProjectForm {
   title: string; slug: string; clientName: string; coverImage: SanityImage | null
   shortDescription: string; projectType: string; technologies: string[]
-  body: PortableTextContent; completedAt: string; isActive: boolean
-  featuredOnHomepage: boolean; order: number; seoTitle: string; seoDescription: string
+  body: PortableTextContent; completedAt: string; screenshots: SanityImage[]
+  isActive: boolean; featuredOnHomepage: boolean; order: number
+  seoTitle: string; seoDescription: string
 }
 
 const emptyProjectForm: ProjectForm = {
   title: '', slug: '', clientName: '', coverImage: null,
   shortDescription: '', projectType: '', technologies: [],
-  body: [], completedAt: '', isActive: false, featuredOnHomepage: false,
-  order: 0, seoTitle: '', seoDescription: '',
+  body: [], completedAt: '', screenshots: [], isActive: false,
+  featuredOnHomepage: false, order: 0, seoTitle: '', seoDescription: '',
 }
 
 export function PortfolioTab({ ctx }: PortfolioTabProps) {
@@ -52,6 +55,8 @@ export function PortfolioTab({ ctx }: PortfolioTabProps) {
   const [testimonials, setTestimonials] = useState<TestimonialDocument[]>([])
   const [mobileMenuId, setMobileMenuId] = useState<string | null>(null)
   const [techInput, setTechInput] = useState('')
+  const [screenshotUploading, setScreenshotUploading] = useState(false)
+  const [screenshotError, setScreenshotError] = useState<string | null>(null)
   // Settings
   const [settingsRev, setSettingsRev] = useState('')
   const [pageHeading, setPageHeading] = useState('')
@@ -92,7 +97,8 @@ export function PortfolioTab({ ctx }: PortfolioTabProps) {
       coverImage: p.coverImage, shortDescription: p.shortDescription,
       projectType: p.projectType ?? '', technologies: p.technologies ?? [],
       body: p.body ?? [], completedAt: p.completedAt ?? '',
-      isActive: p.isActive, featuredOnHomepage: p.featuredOnHomepage ?? false,
+      screenshots: p.screenshots ?? [], isActive: p.isActive,
+      featuredOnHomepage: p.featuredOnHomepage ?? false,
       order: p.order, seoTitle: p.seoTitle ?? '', seoDescription: p.seoDescription ?? '',
     })
     setFormErrors({}); setDirty(false); setSlideOpen(true)
@@ -107,6 +113,7 @@ export function PortfolioTab({ ctx }: PortfolioTabProps) {
       coverImage: form.coverImage ?? undefined, shortDescription: form.shortDescription,
       projectType: form.projectType || undefined, technologies: form.technologies,
       body: form.body, completedAt: form.completedAt || undefined,
+      screenshots: form.screenshots.length > 0 ? form.screenshots : undefined,
       isActive: form.isActive, featuredOnHomepage: form.featuredOnHomepage,
       order: form.order, seoTitle: form.seoTitle || undefined,
       seoDescription: form.seoDescription || undefined,
@@ -213,6 +220,48 @@ export function PortfolioTab({ ctx }: PortfolioTabProps) {
 
   function removeTech(index: number) {
     updateForm({ technologies: form.technologies.filter((_, i) => i !== index) })
+  }
+
+  function removeScreenshot(index: number) {
+    updateForm({ screenshots: form.screenshots.filter((_, i) => i !== index) })
+  }
+
+  async function handleScreenshotUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp']
+    if (!allowed.includes(file.type)) {
+      setScreenshotError('Only JPEG, PNG, and WebP images are allowed.')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setScreenshotError('File size must be under 10 MB.')
+      return
+    }
+
+    setScreenshotError(null)
+    setScreenshotUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
+      if (!res.ok) {
+        setScreenshotError('Upload failed. Please try again.')
+        return
+      }
+      const data = await res.json() as { data: { assetId: string } }
+      const newImage: SanityImage = {
+        _type: 'image',
+        asset: { _ref: data.data.assetId, _type: 'reference' },
+      }
+      updateForm({ screenshots: [...form.screenshots, newImage] })
+    } catch {
+      setScreenshotError('Upload failed. Please check your connection.')
+    } finally {
+      setScreenshotUploading(false)
+    }
   }
 
   const getTestimonialCount = (projectId: string) => {
@@ -353,6 +402,64 @@ export function PortfolioTab({ ctx }: PortfolioTabProps) {
             <label htmlFor="proj-date" className="block text-sm font-medium text-gray-700 mb-1">Completed At</label>
             <input id="proj-date" type="date" value={form.completedAt} onChange={(e) => updateForm({ completedAt: e.target.value })} className="px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2" />
           </div>
+          {/* Screenshots */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Screenshots</label>
+            <p className="text-xs text-gray-500 mb-3">Up to 9 additional images. The cover image above is always the primary.</p>
+            {form.screenshots.length > 0 && (
+              <div className="grid grid-cols-3 gap-3 mb-3">
+                {form.screenshots.map((screenshot, i) => (
+                  screenshot?.asset && (
+                    <div key={i} className="relative group">
+                      <div className="relative w-full h-20 rounded-lg overflow-hidden border border-gray-200">
+                        <Image
+                          src={urlFor(screenshot).width(120).height(90).url()}
+                          alt={`Screenshot ${i + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="120px"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeScreenshot(i)}
+                        className="absolute -top-2 -right-2 w-7 h-7 min-w-[44px] min-h-[44px] flex items-center justify-center bg-red-600 text-white rounded-full text-xs hover:bg-red-700 shadow-sm"
+                        aria-label={`Remove screenshot ${i + 1}`}
+                      >
+                        <XIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  )
+                ))}
+              </div>
+            )}
+            {form.screenshots.length === 0 && !screenshotUploading && (
+              <p className="text-sm text-gray-400 mb-3">No screenshots yet. Add up to 9 images.</p>
+            )}
+            {form.screenshots.length < 9 && (
+              <label className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 min-h-[44px] cursor-pointer focus-within:ring-2 focus-within:ring-gold focus-within:ring-offset-2 ${screenshotUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                {screenshotUploading ? (
+                  <><RefreshCw className="h-4 w-4 animate-spin" /> Uploading...</>
+                ) : (
+                  <><Upload className="h-4 w-4" /> Add Image</>
+                )}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleScreenshotUpload}
+                  className="sr-only"
+                  disabled={screenshotUploading}
+                />
+              </label>
+            )}
+            {screenshotError && (
+              <p className="mt-1 text-sm text-red-600" role="alert">{screenshotError}</p>
+            )}
+            {screenshotUploading && (
+              <p className="mt-1 text-xs text-amber-600">An upload is in progress. Saving now will not include it.</p>
+            )}
+          </div>
+
           <ToggleSwitch checked={form.isActive} onChange={(v) => updateForm({ isActive: v })} label="Active" />
           <ToggleSwitch checked={form.featuredOnHomepage} onChange={(v) => updateForm({ featuredOnHomepage: v })} label="Featured on Homepage" />
           <div>

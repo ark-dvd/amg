@@ -130,7 +130,8 @@ export const project = defineType({
           options: { hotspot: true },
         }),
       ],
-      validation: (rule) => rule.max(20),
+      validation: (rule) => rule.max(9),
+      description: 'Up to 9 additional images. First image is shown as the gallery opener.',
     }),
     defineField({
       name: 'completedAt',

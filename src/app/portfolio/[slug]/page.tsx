@@ -5,6 +5,7 @@ import { urlFor } from '@/lib/sanity/image'
 import { buildMetadata, buildOrganizationJsonLd, buildBreadcrumbJsonLd, buildJsonLdScript, canonicalUrl } from '@/lib/seo'
 import { JsonLd } from '@/components/JsonLd'
 import { PortableTextRenderer } from '@/components/PortableTextRenderer'
+import { ProjectGallery } from '@/components/ProjectGallery'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
@@ -115,20 +116,10 @@ export default async function ProjectDetailPage({ params }: Props) {
         {/* Body */}
         {project.body && <PortableTextRenderer value={project.body} />}
 
-        {/* Screenshots */}
+        {/* Screenshots Gallery */}
         {project.screenshots && project.screenshots.length > 0 && (
-          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {project.screenshots.map((screenshot, i) => (
-              <div key={i} className="relative h-48 sm:h-64 rounded-lg overflow-hidden border border-border">
-                <Image
-                  src={urlFor(screenshot).width(800).height(500).url()}
-                  alt={`${project.title} screenshot ${i + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                />
-              </div>
-            ))}
+          <div className="mt-12">
+            <ProjectGallery screenshots={project.screenshots} projectTitle={project.title} />
           </div>
         )}
 
